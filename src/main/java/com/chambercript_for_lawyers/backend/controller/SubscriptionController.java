@@ -29,7 +29,6 @@ public class SubscriptionController {
         return subscriptionService.updatePlan(adminId, request);
     }
 
-    // Helper to get Admin ID safely
     private Long getUserIdFromPrincipal(Principal principal) {
         if (principal == null) throw new RuntimeException("Unauthorized");
         return userRepository.findByEmail(principal.getName())
