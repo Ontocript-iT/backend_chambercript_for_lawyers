@@ -4,6 +4,7 @@ import com.chambercript_for_lawyers.backend.repository.UserRepository;
 import com.chambercript_for_lawyers.backend.services.central.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -18,12 +19,14 @@ public class SubscriptionController {
     private final UserRepository userRepository;
 
     @PostMapping("/choose")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> choosePlan(Principal principal, @RequestBody SubscriptionRequest request) {
         Long adminId = getUserIdFromPrincipal(principal);
         return subscriptionService.choosePlan(adminId, request);
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updatePlan(Principal principal, @RequestBody SubscriptionRequest request) {
         Long adminId = getUserIdFromPrincipal(principal);
         return subscriptionService.updatePlan(adminId, request);

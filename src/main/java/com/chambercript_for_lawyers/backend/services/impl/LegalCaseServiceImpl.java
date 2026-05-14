@@ -35,6 +35,7 @@ public class LegalCaseServiceImpl implements LegalCaseService {
             newCase.setOppositeParty(dto.getOppositeParty());
             newCase.setFilingDate(dto.getFilingDate());
             newCase.setDescription(dto.getDescription());
+            newCase.setLawFirmCode(dto.getLawFirmCode());
             newCase.setAssignedLawyer(dto.getAssignedLawyer());
             newCase.setClientId(dto.getClientId());
 
@@ -51,13 +52,13 @@ public class LegalCaseServiceImpl implements LegalCaseService {
             generateCaseFolders(savedCase);
 
             HashMap response = new HashMap<>();
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("message", "Case registered successfully");
             response.put("data", savedCase);
             return ResponseEntity.ok(response);
         }catch(Exception e){
             HashMap errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
+            errorResponse.put("status", 500);
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }

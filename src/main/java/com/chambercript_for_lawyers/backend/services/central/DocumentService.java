@@ -10,5 +10,5 @@ import java.io.IOException;
 
 public interface DocumentService {
 
-    ResponseEntity<?> uploadDocument(MultipartFile file, String documentType, String version, String uploadedBy, Long folderId);
+    ResponseEntity<?> uploadDocument(MultipartFile file, String documentType, String version, String uploadedBy, Long folderId,String lawFirmCode);
 }

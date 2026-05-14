@@ -10,4 +10,6 @@ public interface SystemDataService {
     ResponseEntity<?> getAllCaseTypes();
 
     ResponseEntity<?> getAllCourts();
+
+    ResponseEntity<?> getSubscriptionPlans();
 }

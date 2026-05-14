@@ -8,4 +8,8 @@ import org.springframework.http.ResponseEntity;
 public interface FolderService {
     ResponseEntity<?> createFolder(FolderRequest folderDTO);
     ResponseEntity<?> getFolderContents(Long folderId);
+
+    ResponseEntity<?> getFoldersByCaseId(Long caseId);
+
+    ResponseEntity<?> getFoldersByLawFirmCode(String lawFirmCode);
 }

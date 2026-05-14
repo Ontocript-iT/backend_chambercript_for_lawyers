@@ -32,13 +32,13 @@ public class HearingServiceImpl implements HearingService {
 
             HashMap response = new HashMap<>();
 
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("message", "Hearing date added successfully");
             response.put("data", savedHearing);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         }catch(Exception e){
             HashMap response = new HashMap<>();
-            response.put("status", "error");
+            response.put("status", 500);
             response.put("message", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -53,13 +53,13 @@ public class HearingServiceImpl implements HearingService {
 
             HashMap response = new HashMap<>();
 
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("message", "Hearing dates retrieved successfully");
             response.put("data", hearingRepository.findByLegalCaseId(legalCase.getId()));
             return new ResponseEntity<>(response, HttpStatus.OK);
         }catch(Exception e){
             HashMap response = new HashMap<>();
-            response.put("status", "error");
+            response.put("status", 500);
             response.put("message", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }

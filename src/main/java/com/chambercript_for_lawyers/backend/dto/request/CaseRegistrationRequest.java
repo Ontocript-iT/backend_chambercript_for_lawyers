@@ -16,4 +16,5 @@ public class CaseRegistrationRequest {
     private Long clientId;
     private Long caseTypeId;
     private Long courtId;
+    private String lawFirmCode;
 }

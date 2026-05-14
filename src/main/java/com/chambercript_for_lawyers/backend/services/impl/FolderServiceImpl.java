@@ -39,6 +39,7 @@ public class FolderServiceImpl implements FolderService {
             Folder folder = new Folder();
             folder.setName(dto.getName());
             folder.setCaseId(dto.getCaseId());
+            folder.setLawFirmCode(dto.getLawFirmCode());
             folder.setClientId(dto.getClientId());
 
             if (dto.getParentFolderId() != null) {
@@ -49,13 +50,13 @@ public class FolderServiceImpl implements FolderService {
 
             Folder savedFolder = folderRepository.save(folder);
             Map<String, Object> response = new HashMap<>();
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("message", "Folder created successfully");
             response.put("folder", savedFolder);
             return ResponseEntity.ok(response);
         }catch (Exception e){
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
+            errorResponse.put("status", 500);
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
@@ -71,12 +72,42 @@ public class FolderServiceImpl implements FolderService {
             contents.put("documents", documentRepository.findByFolderId(folderId));
 
             Map<String, Object> response = new HashMap<>();
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("contents", contents);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getFoldersByCaseId(Long caseId) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("folders", folderRepository.findByCaseId(caseId));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getFoldersByLawFirmCode(String lawFirmCode) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("folders", folderRepository.findByLawFirmCode(lawFirmCode));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }

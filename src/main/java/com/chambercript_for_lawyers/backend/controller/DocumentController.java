@@ -20,8 +20,9 @@ public class DocumentController {
             @RequestParam("documentType") String documentType,
             @RequestParam("version") String version,
             @RequestParam("uploadedBy") String uploadedBy,
-            @RequestParam("folderId") Long folderId) {
-            return documentService.uploadDocument(file, documentType, version, uploadedBy, folderId);
+            @RequestParam("folderId") Long folderId,
+            @RequestParam("lawFirmCode") String lawFirmCode){
+            return documentService.uploadDocument(file, documentType, version, uploadedBy, folderId,lawFirmCode);
 
     }
 }

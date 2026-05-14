@@ -20,4 +20,5 @@ public class FolderRequest {
     private Long caseId;
     private Long clientId;
     private Long parentFolderId;
+    private String lawFirmCode;
 }

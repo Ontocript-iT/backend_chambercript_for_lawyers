@@ -42,6 +42,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "admin")
     private List<Employee> createdEmployees;
 
+    private String profilePictureUrl;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

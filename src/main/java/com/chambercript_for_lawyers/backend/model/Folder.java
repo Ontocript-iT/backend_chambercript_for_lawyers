@@ -16,10 +16,10 @@ public class Folder {
 
     private String name;
 
-    private Long caseId;   // Links to Case (can be null if it's a general folder)
-    private Long clientId; // Links to Client
+    private Long caseId;
+    private Long clientId;
 
-    // Self-referencing for endless sub-folders
+    private String lawFirmCode;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_folder_id")
     @JsonIgnoreProperties({"subFolders", "hibernateLazyInitializer", "handler"})

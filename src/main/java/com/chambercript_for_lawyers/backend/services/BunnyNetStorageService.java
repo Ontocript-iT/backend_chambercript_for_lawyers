@@ -27,7 +27,6 @@ public class BunnyNetStorageService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String uploadFile(MultipartFile file, String folderPath) throws IOException {
-        // Clean up the file name
         String fileName = file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_");
 
         // Construct the full Bunny.net storage URL: https://storage.bunnycdn.com/zone/path/filename.pdf

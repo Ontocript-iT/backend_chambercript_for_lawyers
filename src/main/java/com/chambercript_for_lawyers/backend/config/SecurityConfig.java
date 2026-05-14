@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -26,7 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register/admin", "/api/auth/verify", "/api/auth/login","/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                        .requestMatchers("/api/admin/**").hasAnyRole( "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -36,3 +38,8 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
+//// Role-based URL rules
+//                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
+//                        .requestMatchers("/api/employee/**").hasAnyRole("ADMIN", "MANAGER", "EMPLOYEE")

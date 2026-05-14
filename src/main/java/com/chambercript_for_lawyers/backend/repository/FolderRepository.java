@@ -8,4 +8,8 @@ import java.util.List;
 public interface FolderRepository extends JpaRepository<Folder, Long> {
     List<Folder> findByParentFolderIsNullAndCaseId(Long caseId); // Get root folders of a case
     List<Folder> findByParentFolderId(Long parentFolderId);
+
+    Object findByCaseId(Long caseId);
+
+    Object findByLawFirmCode(String lawFirmCode);
 }

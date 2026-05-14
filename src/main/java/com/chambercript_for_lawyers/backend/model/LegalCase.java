@@ -44,4 +44,6 @@ public class LegalCase {
     @OneToMany(mappedBy = "legalCase", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("legalCase")
     private List<Task> tasks;
+
+    private String lawFirmCode;
 }

@@ -28,7 +28,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 
     @Override
-    public ResponseEntity<?> uploadDocument(MultipartFile file, String documentType, String version, String uploadedBy, Long folderId) {
+    public ResponseEntity<?> uploadDocument(MultipartFile file, String documentType, String version, String uploadedBy, Long folderId,String lawFirmCode) {
 
         try {
             if (file.isEmpty()) {
@@ -46,6 +46,7 @@ public class DocumentServiceImpl implements DocumentService {
             doc.setDocumentName(file.getOriginalFilename());
             doc.setDocumentType(documentType);
             doc.setVersion(version);
+            doc.setLawFirmCode(lawFirmCode);
             doc.setFileUrl(fileUrl);
             doc.setUploadedBy(uploadedBy);
             doc.setFolder(folder);
@@ -53,13 +54,13 @@ public class DocumentServiceImpl implements DocumentService {
             Document savedDocument = documentRepository.save(doc);
 
             HashMap<String, Object> response = new HashMap<>();
-            response.put("status", "success");
+            response.put("status", 200);
             response.put("message", "Document uploaded successfully");
             response.put("savedDocument", savedDocument);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             HashMap<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
+            errorResponse.put("status", 500);
             errorResponse.put("message", "Failed to upload document: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }

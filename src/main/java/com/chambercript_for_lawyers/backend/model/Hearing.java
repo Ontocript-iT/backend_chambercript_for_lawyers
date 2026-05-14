@@ -30,4 +30,6 @@ public class Hearing {
     @JsonIgnoreProperties({"hearings", "tasks", "hibernateLazyInitializer", "handler"})
     private LegalCase legalCase;
 
+    private String lawFirmCode;
+
 }

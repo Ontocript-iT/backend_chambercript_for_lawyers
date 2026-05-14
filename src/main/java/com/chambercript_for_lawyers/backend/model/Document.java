@@ -15,10 +15,11 @@ public class Document {
     private Long id;
 
     private String documentName;
-    private String documentType; // Plaint, Evidence, etc.
+    private String documentType;
     private String version;
-    private String fileUrl; // S3 or local path link
+    private String fileUrl;
     private String uploadedBy;
+    private String lawFirmCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id")

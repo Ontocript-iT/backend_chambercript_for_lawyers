@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
             return ResponseEntity.status(403).body(response);
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
 
         HashMap<String, Object> safeUserData = new HashMap<>();
         safeUserData.put("id", user.getId());

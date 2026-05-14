@@ -6,6 +6,7 @@ import com.chambercript_for_lawyers.backend.repository.UserRepository;
 import com.chambercript_for_lawyers.backend.services.central.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -19,6 +20,7 @@ public class ClientController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
     public ResponseEntity<?> registerClient(Principal principal, @RequestBody ClientRegistrationRequest request) {
 
         if (principal == null) {
