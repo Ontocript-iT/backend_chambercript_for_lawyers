@@ -7,4 +7,14 @@ public interface SubscriptionService {
     ResponseEntity<?> choosePlan(Long adminId, SubscriptionRequest request);
 
     ResponseEntity<?> updatePlan(Long adminId, SubscriptionRequest request);
+
+    ResponseEntity<?> getCurrentSubscription(Long adminId);
+
+    ResponseEntity<?> getAllSubscriptions();
+
+    ResponseEntity<?> activeSubscriptionById(Long id);
+
+    ResponseEntity<?> searchSubscriptionsByAdminEmailOrNic(String query);
+
+    ResponseEntity<?> getInactiveSubscriptions();
 }

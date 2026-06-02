@@ -4,6 +4,7 @@ import com.chambercript_for_lawyers.backend.dto.request.AuditLogRequest;
 import com.chambercript_for_lawyers.backend.services.central.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,11 +20,13 @@ public class AuditLogController {
     }
 
     @GetMapping("/user/{lawFirmCode}")
-    public ResponseEntity<?> getLogsByUserCode(@PathVariable String lawFirmCode) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getLogsByLawFirmCode(@PathVariable String lawFirmCode) {
         return auditLogService.getLogsByLawFirmCode(lawFirmCode);
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> getAllLogs() {
         return auditLogService.getAllLogs();
     }

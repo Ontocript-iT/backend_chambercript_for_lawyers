@@ -12,4 +12,5 @@ public class SubscriptionResponseDTO {
     private Integer maxStorageGb;
     private Long adminId;
     private String adminName;
+    private boolean isActive;
 }

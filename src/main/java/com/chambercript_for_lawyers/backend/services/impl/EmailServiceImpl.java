@@ -17,46 +17,61 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendVerificationEmail(String to, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(fromEmail);
-        message.setTo(to);
-        message.setSubject("Verify your account");
-        message.setText("Please click the link to verify your email: " +
-                "http://localhost:8080/api/auth/verify?token=" + token);
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Verify your account");
+            message.setText("Please click the link to verify your email: " +
+                    "http://localhost:8080/api/auth/verify?token=" + token);
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+        }
+
     }
 
     @Override
     public void sendPasswordResetEmail(String to, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try{
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(fromEmail); // Uses the same verified Brevo sender
-        message.setTo(to);
-        message.setSubject("Password Reset Request");
+            message.setFrom(fromEmail); // Uses the same verified Brevo sender
+            message.setTo(to);
+            message.setSubject("Password Reset Request");
 
-        // Note: In a production app, this link usually points to your frontend
-        // application (like React, Angular, Flutter, etc.) which then sends the
-        // new password and token back to your Spring Boot API.
-        message.setText("You have requested to reset your password.\n\n" +
-                "Please click the link below to set a new password:\n" +
-                "http://localhost:8080/api/auth/reset-password?token=" + token + "\n\n" +
-                "If you did not request this, please ignore this email.");
+            // Note: In a production app, this link usually points to your frontend
+            // application (like React, Angular, Flutter, etc.) which then sends the
+            // new password and token back to your Spring Boot API.
+            message.setText("You have requested to reset your password.\n\n" +
+                    "Please click the link below to set a new password:\n" +
+                    "http://localhost:8080/api/auth/reset-password?token=" + token + "\n\n" +
+                    "If you did not request this, please ignore this email.");
 
-        mailSender.send(message);
+            mailSender.send(message);
+        }catch (Exception e){
+                System.err.println("Error sending email: " + e.getMessage());
+        }
+
     }
 
     @Override
     public void sendTempPasswordEmail(String email, String password) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try{
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(fromEmail); // Uses the same verified Brevo sender
-        message.setTo(email);
-        message.setSubject("Your Temporary Password");
-        message.setText("Your password has been reset. Your temporary password is: " + password +
-                "\n\nPlease log in and change your password immediately.");
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("Your Temporary Password");
+            message.setText("Your password has been reset. Your temporary password is: " + password +
+                    "\n\nPlease log in and change your password immediately.");
 
-        mailSender.send(message);
+            mailSender.send(message);
+        }catch (Exception e){
+            System.err.println("Error sending email: " + e.getMessage());
+        }
+
     }
 }

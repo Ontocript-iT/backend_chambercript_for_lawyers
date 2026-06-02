@@ -1,6 +1,7 @@
 package com.chambercript_for_lawyers.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
