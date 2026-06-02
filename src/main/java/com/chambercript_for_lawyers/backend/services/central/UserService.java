@@ -1,4 +1,16 @@
 package com.chambercript_for_lawyers.backend.services.central;
 
-public class UserService {
+import com.chambercript_for_lawyers.backend.model.User;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface UserService {
+
+    ResponseEntity<?> uploadProfilePicture(Long userId, MultipartFile file);
+
+    ResponseEntity<?> getUserDetailsById(Long id);
+
+    ResponseEntity<?> getAllLawFirms();
+
+    ResponseEntity<?> searchLawFirmsByLawFirmCode(String lawFirmCode);
 }

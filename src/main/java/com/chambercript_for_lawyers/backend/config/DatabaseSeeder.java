@@ -25,6 +25,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .lastName("Admin")
                     .email("superadmin@system.com")
                     .password(passwordEncoder.encode("SuperSecret123!"))
+                    .registrationDate(java.time.LocalDateTime.now())
                     .role(Role.SUPER_ADMIN)
                     .isEmailVerified(true)
                     .build();

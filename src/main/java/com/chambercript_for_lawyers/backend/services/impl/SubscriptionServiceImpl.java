@@ -10,8 +10,10 @@ import com.chambercript_for_lawyers.backend.services.central.SubscriptionService
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +27,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public ResponseEntity<?> choosePlan(Long adminId, SubscriptionRequest request) {
         HashMap<String, Object> response = new HashMap<>();
+
+        System.out.println("Received subscription request: " + request + " for admin ID: " + adminId);
 
         try {
             Optional<User> adminOpt = userRepository.findById(adminId);
@@ -47,6 +51,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     .planType(subscription.getPlanType().name())
                     .maxEmployees(subscription.getMaxEmployees())
                     .maxStorageGb(subscription.getMaxStorageGb())
+                    .isActive(subscription.isActive())
                     .adminId(subscription.getAdmin().getId())
                     .adminName(subscription.getAdmin().getFirstName() + " " + subscription.getAdmin().getLastName())
                     .build();
@@ -90,6 +95,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     .maxEmployees(existingSub.getMaxEmployees())
                     .maxStorageGb(existingSub.getMaxStorageGb())
                     .adminId(existingSub.getAdmin().getId())
+                    .isActive(false)
                     .adminName(existingSub.getAdmin().getFirstName() + " " + existingSub.getAdmin().getLastName())
                     .build();
 
@@ -111,7 +117,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
-    // --- Helper Methods to map Plans to Limits ---
 
     private Subscription buildSubscription(User admin, SubscriptionRequest request) {
         Subscription subscription = new Subscription();
@@ -127,10 +132,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             case STANDARD:
                 subscription.setMaxEmployees(2);
                 subscription.setMaxStorageGb(20);
+                subscription.setActive(false);
                 break;
             case PRO:
                 subscription.setMaxEmployees(7);
                 subscription.setMaxStorageGb(50);
+                subscription.setActive(false);
                 break;
             case CUSTOM:
                 if (request.getCustomMaxEmployees() == null || request.getCustomMaxStorageGb() == null) {
@@ -138,9 +145,176 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 }
                 subscription.setMaxEmployees(request.getCustomMaxEmployees());
                 subscription.setMaxStorageGb(request.getCustomMaxStorageGb());
+                subscription.setActive(false);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid plan type provided.");
         }
     }
+
+    @Override
+    public ResponseEntity<?> getCurrentSubscription(Long adminId) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<Subscription> subOpt = subscriptionRepository.findByAdminId(adminId);
+
+            if (subOpt.isEmpty()) {
+                response.put("status", 404);
+                response.put("message", "No active subscription found for this admin.");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            Subscription sub = subOpt.get();
+            SubscriptionResponseDTO cleanData = SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .build();
+
+            response.put("status", 200);
+            response.put("message", "Current subscription retrieved successfully.");
+            response.put("data", cleanData);
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllSubscriptions() {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            var subscriptions = subscriptionRepository.findAll();
+            var cleanData = subscriptions.stream().map(sub -> SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .build()).toList();
+
+            response.put("status", 200);
+            response.put("message", "All subscriptions retrieved successfully.");
+            response.put("data", cleanData);
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> activeSubscriptionById(Long subscriptionId) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<Subscription> subOpt = subscriptionRepository.findById(subscriptionId);
+
+            if (subOpt.isEmpty()) {
+                response.put("status", 404);
+                response.put("message", "Subscription not found.");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            Subscription sub = subOpt.get();
+            sub.setActive(true);
+            subscriptionRepository.save(sub);
+
+            SubscriptionResponseDTO cleanData = SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .build();
+
+            response.put("status", 200);
+            response.put("message", "Subscription activated successfully.");
+            response.put("data", cleanData);
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> searchSubscriptionsByAdminEmailOrNic(String query) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            var subscriptions = subscriptionRepository.findSubscriptionsByAdminEmailOrNic(query);
+
+            var cleanData = subscriptions.stream().map(sub -> SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    // Safe to call getAdmin() here because of JOIN FETCH
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .build()).toList();
+
+            response.put("status", 200);
+            response.put("message", "Subscriptions matching query retrieved successfully.");
+            response.put("data", cleanData);
+
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getInactiveSubscriptions() {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            List<Subscription> subscriptions = subscriptionRepository.findByIsActiveFalse();
+
+            List<SubscriptionResponseDTO> cleanData = subscriptions.stream().map(sub -> SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .build()).toList();
+
+            response.put("status", 200);
+            response.put("message", "Inactive subscriptions retrieved successfully.");
+            response.put("size", subscriptions.size());
+            response.put("data", cleanData);
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+
 }

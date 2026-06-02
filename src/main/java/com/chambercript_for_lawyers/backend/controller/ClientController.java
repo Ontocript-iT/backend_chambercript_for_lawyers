@@ -6,6 +6,7 @@ import com.chambercript_for_lawyers.backend.repository.UserRepository;
 import com.chambercript_for_lawyers.backend.services.central.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -19,6 +20,7 @@ public class ClientController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
     public ResponseEntity<?> registerClient(Principal principal, @RequestBody ClientRegistrationRequest request) {
 
         if (principal == null) {
@@ -33,5 +35,18 @@ public class ClientController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return clientService.registerClient(user, request);
+    }
+
+    @GetMapping("/getClientsByLawFirmCode/{lawFirmCode}" )
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getClientsByLawFirmCode(@PathVariable String lawFirmCode) {
+        return clientService.getClientsByLawFirmCode(lawFirmCode);
+    }
+
+
+    @GetMapping("/getClientById/{clientId}" )
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getClientById(@PathVariable Long clientId) {
+        return clientService.getClientById(clientId);
     }
 }
