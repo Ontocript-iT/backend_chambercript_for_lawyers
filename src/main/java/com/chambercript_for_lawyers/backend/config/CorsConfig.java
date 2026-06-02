@@ -11,7 +11,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // Apply to all endpoints
-                .allowedOrigins("https://ccfl.duckdns.org") // Explicitly allow your Next.js frontend
+                .allowedOrigins("https://frontend-chambercript-for-lawyers-avm7965k4-ontocript.vercel.app") // Explicitly allow your Next.js frontend
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow these HTTP methods
                 .allowedHeaders("*") // Allow all headers
                 .allowCredentials(true); // Required if you are sending cookies or authorization headers
