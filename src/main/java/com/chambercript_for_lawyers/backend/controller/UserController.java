@@ -28,4 +28,10 @@ public class UserController {
            return userService.uploadProfilePicture(userId, file);
 
     }
+
+    @GetMapping("/getUserDetailsById/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getUserDetailsById(@PathVariable Long id) {
+        return userService.getUserDetailsById(id);
+    }
 }

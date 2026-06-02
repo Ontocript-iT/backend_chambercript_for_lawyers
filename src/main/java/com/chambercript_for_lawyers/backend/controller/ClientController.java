@@ -36,4 +36,17 @@ public class ClientController {
 
         return clientService.registerClient(user, request);
     }
+
+    @GetMapping("/getClientsByLawFirmCode/{lawFirmCode}" )
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getClientsByLawFirmCode(@PathVariable String lawFirmCode) {
+        return clientService.getClientsByLawFirmCode(lawFirmCode);
+    }
+
+
+    @GetMapping("/getClientById/{clientId}" )
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getClientById(@PathVariable Long clientId) {
+        return clientService.getClientById(clientId);
+    }
 }

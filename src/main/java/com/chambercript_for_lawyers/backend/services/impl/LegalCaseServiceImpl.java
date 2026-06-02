@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +79,79 @@ public class LegalCaseServiceImpl implements LegalCaseService {
             folderDTO.setClientId(savedCase.getClientId());
             folderDTO.setParentFolderId(null);
             folderService.createFolder(folderDTO);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCasesByLawFirmCode(String lawFirmCode) {
+        try {
+            LegalCase cases = legalCaseRepository.findByLawFirmCode(lawFirmCode);
+            HashMap response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Cases retrieved successfully");
+            response.put("data", cases);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            HashMap errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCasesByClientId(Long clientId) {
+        try {
+            LegalCase cases = legalCaseRepository.findByClientId(clientId);
+            HashMap response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Cases retrieved successfully");
+            response.put("data", cases);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            HashMap errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCaseById(Long caseId) {
+        try {
+            LegalCase legalCase = legalCaseRepository.findById(caseId)
+                    .orElseThrow(() -> new RuntimeException("Case not found with ID: " + caseId));
+            HashMap response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Case retrieved successfully");
+            response.put("data", legalCase);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            HashMap errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getFutureCases() {
+        try {
+            List<LegalCase> cases = legalCaseRepository.findFutureCases();
+
+            HashMap<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Future cases retrieved successfully");
+            response.put("caseCount", cases.size());
+            response.put("data", cases);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            HashMap<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", "Error retrieving future cases: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }

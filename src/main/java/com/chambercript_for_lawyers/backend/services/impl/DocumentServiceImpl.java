@@ -3,8 +3,10 @@ package com.chambercript_for_lawyers.backend.services.impl;
 
 import com.chambercript_for_lawyers.backend.model.Document;
 import com.chambercript_for_lawyers.backend.model.Folder;
+import com.chambercript_for_lawyers.backend.model.LawFirm;
 import com.chambercript_for_lawyers.backend.repository.DocumentRepository;
 import com.chambercript_for_lawyers.backend.repository.FolderRepository;
+import com.chambercript_for_lawyers.backend.repository.lawFirmRepository;
 import com.chambercript_for_lawyers.backend.services.BunnyNetStorageService;
 import com.chambercript_for_lawyers.backend.services.central.DocumentService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,12 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
 
 
+    private final PlanLimitServiceImpl limitService;
+
+
     private final FolderRepository folderRepository;
+
+    private final lawFirmRepository firmRepository;
 
 
     private final BunnyNetStorageService bunnyNetStorageService;
@@ -36,6 +44,12 @@ public class DocumentServiceImpl implements DocumentService {
             }
             Folder folder = folderRepository.findById(folderId)
                     .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+//            Optional<LawFirm> firm = firmRepository.findByLawFirmCode(lawFirmCode);
+//
+//            if (limitService.isStorageLimitExceeded(firm.get(), file.getSize())) {
+//                throw new RuntimeException("Storage limit exceeded for your plan!");
+//            }
 
             // 1. Build the logical folder path (e.g., "Client_505/Case_101/01_Pleadings/Medical_Records")
             String logicalFolderPath = buildFolderPath(folder);

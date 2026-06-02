@@ -10,4 +10,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByVerificationToken(String token);
 
     Optional<User> findFirstByRoleOrderByIdDesc(Role role);
+
+    Optional<User> findByLawFirmCode(String clientId);
+
+    Optional<User>  findByLawFirmCodeContainingIgnoreCase(String lawFirmCode);
 }

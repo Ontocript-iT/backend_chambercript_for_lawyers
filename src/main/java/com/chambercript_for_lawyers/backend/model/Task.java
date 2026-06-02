@@ -10,19 +10,30 @@ import java.time.LocalDate;
 @Data
 @Table(name = "tasks")
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String taskTitle;
+    private String title;
+
+    @Column(length = 1000)
     private String description;
-    private String assignedTo;
-    private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus status = TaskStatus.PENDING;
+    @Column(length = 50)
+    private TaskStatus status = TaskStatus.PENDING; // Default status
+
+    private LocalDate dueDate;
+    private LocalDate assignedDate = LocalDate.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id")
-    private LegalCase legalCase;
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_by_id")
+    private User assignedBy;
+
+    private Long caseId;
 }

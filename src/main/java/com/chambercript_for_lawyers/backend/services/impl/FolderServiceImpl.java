@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -54,7 +55,7 @@ public class FolderServiceImpl implements FolderService {
             response.put("message", "Folder created successfully");
             response.put("folder", savedFolder);
             return ResponseEntity.ok(response);
-        }catch (Exception e){
+        } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", 500);
             errorResponse.put("message", e.getMessage());
@@ -85,10 +86,12 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public ResponseEntity<?> getFoldersByCaseId(Long caseId) {
+
         try {
+            List<Folder> caseFolder = folderRepository.findByCaseIdAndParentFolderIdIsNull(caseId);
             Map<String, Object> response = new HashMap<>();
             response.put("status", 200);
-            response.put("folders", folderRepository.findByCaseId(caseId));
+            response.put("folders", caseFolder);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -112,4 +115,62 @@ public class FolderServiceImpl implements FolderService {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+
+    @Override
+    public ResponseEntity<?> getFoldersByClientId(Long clientId) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("folders", folderRepository.findByClientId(clientId));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> renameFolder(Long folderId, String newName) {
+        try {
+            if (newName == null || newName.trim().isEmpty()) {
+                throw new RuntimeException("New folder name is required");
+            }
+            Folder folder = folderRepository.findById(folderId)
+                    .orElseThrow(() -> new RuntimeException("Folder not found"));
+            folder.setName(newName);
+            Folder updatedFolder = folderRepository.save(folder);
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Folder renamed successfully");
+            response.put("folder", updatedFolder);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<?> deleteFolder(Long folderId) {
+        try {
+            Folder folder = folderRepository.findById(folderId)
+                    .orElseThrow(() -> new RuntimeException("Folder not found"));
+            folderRepository.delete(folder);
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Folder deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
 }

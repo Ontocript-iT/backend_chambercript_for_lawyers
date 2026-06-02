@@ -22,4 +22,30 @@ public class LegalCaseController {
             return legalCaseService.registerNewCase(dto);
 
     }
+
+    @GetMapping("/getCasesByLawFirmCode/{code}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getCasesByLawFirmCode(@PathVariable String code) {
+        return legalCaseService.getCasesByLawFirmCode(code);
+    }
+
+    @GetMapping("/getCaseByClientId/{clientId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getCaseByClientId(@PathVariable Long clientId) {
+        return legalCaseService.getCasesByClientId(clientId);
+    }
+
+    @GetMapping("/getCaseById/{caseId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getCaseById(@PathVariable Long caseId) {
+        return legalCaseService.getCaseById(caseId);
+    }
+
+    @GetMapping("/getFutureCases")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getFutureCases() {
+        return legalCaseService.getFutureCases();
+    }
+
+
 }

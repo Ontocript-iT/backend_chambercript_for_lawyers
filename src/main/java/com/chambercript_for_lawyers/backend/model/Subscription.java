@@ -28,4 +28,6 @@ public class Subscription {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", referencedColumnName = "id")
     private User admin;
+
+    private boolean isActive;
 }

@@ -25,4 +25,6 @@ public class DocumentController {
             return documentService.uploadDocument(file, documentType, version, uploadedBy, folderId,lawFirmCode);
 
     }
+
+
 }

@@ -6,4 +6,12 @@ import org.springframework.http.ResponseEntity;
 
 public interface LegalCaseService {
     ResponseEntity<?> registerNewCase(CaseRegistrationRequest dto);
+
+    ResponseEntity<?> getCasesByLawFirmCode(String code);
+
+    ResponseEntity<?> getCasesByClientId(Long clientId);
+
+    ResponseEntity<?> getCaseById(Long caseId);
+
+    ResponseEntity<?> getFutureCases();
 }

@@ -12,4 +12,10 @@ public interface FolderService {
     ResponseEntity<?> getFoldersByCaseId(Long caseId);
 
     ResponseEntity<?> getFoldersByLawFirmCode(String lawFirmCode);
+
+    ResponseEntity<?> getFoldersByClientId(Long clientId);
+
+    ResponseEntity<?> renameFolder(Long folderId, String newName);
+
+    ResponseEntity<?> deleteFolder(Long folderId);
 }

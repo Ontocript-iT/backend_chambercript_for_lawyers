@@ -38,4 +38,11 @@ public class SubscriptionController {
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
     }
+
+    @GetMapping("/current")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getCurrentSubscription(Principal principal) {
+        Long adminId = getUserIdFromPrincipal(principal);
+        return subscriptionService.getCurrentSubscription(adminId);
+    }
 }

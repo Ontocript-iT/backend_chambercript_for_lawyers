@@ -3,24 +3,24 @@ package com.chambercript_for_lawyers.backend.services.impl;
 import com.chambercript_for_lawyers.backend.dto.request.ChangePasswordRequest;
 import com.chambercript_for_lawyers.backend.dto.request.RegisterAdminRequest;
 import com.chambercript_for_lawyers.backend.dto.request.RegisterEmployeeRequest;
-import com.chambercript_for_lawyers.backend.model.AuditLog;
-import com.chambercript_for_lawyers.backend.model.Employee;
-import com.chambercript_for_lawyers.backend.model.Role;
-import com.chambercript_for_lawyers.backend.model.User;
+import com.chambercript_for_lawyers.backend.dto.request.SubscriptionRequest;
+import com.chambercript_for_lawyers.backend.model.*;
 import com.chambercript_for_lawyers.backend.repository.AuditLogRepository;
 import com.chambercript_for_lawyers.backend.repository.EmployeeRepository;
+import com.chambercript_for_lawyers.backend.repository.SubscriptionPaymentRepository;
 import com.chambercript_for_lawyers.backend.repository.UserRepository;
 import com.chambercript_for_lawyers.backend.security.JwtService;
 import com.chambercript_for_lawyers.backend.services.central.AuthService;
 import com.chambercript_for_lawyers.backend.services.central.EmailService;
+import com.sun.security.jgss.GSSUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +31,13 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuditLogRepository auditLogRepository;
 
+    private final SubscriptionPaymentRepository subscriptionPaymentRepository;
+
+    private final SubscriptionPaymentServiceImpl subscriptionPaymentService;
+
     private final EmployeeRepository employeeRepository;
+
+    private final SubscriptionServiceImpl subscriptionService;
 
     private final JwtService jwtUtil;
 
@@ -61,12 +67,31 @@ public class AuthServiceImpl implements AuthService {
                 .nic(request.getNic())
                 .role(Role.ADMIN)
                 .isEmailVerified(false)
+                .registrationDate(LocalDateTime.now())
                 .lawFirmCode(generatedCode)
                 .verificationToken(token)
                 .build();
 
         userRepository.save(user);
         emailService.sendVerificationEmail(user.getEmail(), token);
+
+        SubscriptionRequest subscriptionRequest = SubscriptionRequest.builder()
+                .planType(request.getPlanType())
+                .isActive(false)
+                .build();
+
+
+        if (request.getPlanType() == PlanType.CUSTOM) {
+            subscriptionRequest.setCustomMaxEmployees(15);
+            subscriptionRequest.setCustomMaxStorageGb(100);
+        }
+
+
+        ResponseEntity<?> planResponse = subscriptionService.choosePlan(user.getId(), subscriptionRequest);
+
+        if (planResponse.getStatusCode().isError()) {
+            return planResponse;
+        }
 
         response.put("status", 201);
         response.put("message", "Admin registered. Please check email to verify.");
@@ -105,17 +130,54 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = userOptional.get();
+
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
+        var currentMonthPaymentStatus = subscriptionPaymentService.checkCurrentMonthPaymentStatus(user.getLawFirmCode());
+
+        String paymentMessage = "";
+        if (currentMonthPaymentStatus != null && currentMonthPaymentStatus.getBody() != null) {
+            // 1. Cast the generic Object to a Map
+            Map<String, Object> responseBody = (Map<String, Object>) currentMonthPaymentStatus.getBody();
+
+            if (responseBody.get("message") != null) {
+                paymentMessage = (String) responseBody.get("message");
+            }
+        }
+
+
+        boolean isPaymentCompleted = !paymentMessage.toLowerCase().contains("pending");
+
+
+        if (isTrialExpired(user)) {
+            boolean hasPaid = subscriptionPaymentRepository.existsByLawFirmCodeAndIsPaidTrue(user.getLawFirmCode());
+
+            System.out.println("Trial expired for user: " + user.getEmail() + ". Payment status: " + (hasPaid ? "Paid" : "Not Paid"));
+            if (!hasPaid) {
+                HashMap<String, Object> safeUserData = new HashMap<>();
+                safeUserData.put("id", user.getId());
+                safeUserData.put("email", user.getEmail());
+                safeUserData.put("lawFirmCode", user.getLawFirmCode());
+                safeUserData.put("isPaymentCompleted", true);
+                safeUserData.put("role", user.getRole());
+                response.put("status", 200);
+                response.put("token", token);
+                response.put("user", safeUserData);
+                response.put("message", "Trial period expired. Please complete payment to continue using the service.");
+                return ResponseEntity.status(200).body(response);
+            }
+        }
         if (!user.isEmailVerified()) {
             response.put("status", 403);
             response.put("message", "Email not verified. Please check your inbox.");
             return ResponseEntity.status(403).body(response);
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
 
         HashMap<String, Object> safeUserData = new HashMap<>();
         safeUserData.put("id", user.getId());
         safeUserData.put("email", user.getEmail());
+        safeUserData.put("lawFirmCode", user.getLawFirmCode());
+        safeUserData.put("isPaymentCompleted", isPaymentCompleted);
         safeUserData.put("role", user.getRole());
 
         response.put("status", 200);
@@ -124,6 +186,12 @@ public class AuthServiceImpl implements AuthService {
         response.put("user", safeUserData);
 
         return ResponseEntity.status(200).body(response);
+    }
+
+    public boolean isTrialExpired(User user) {
+        long daysPassed = ChronoUnit.DAYS.between(user.getRegistrationDate(), LocalDateTime.now());
+        System.out.println("Days since registration for user " + daysPassed + ": " + daysPassed);
+        return daysPassed < 14;
     }
 
     @Override
@@ -202,6 +270,7 @@ public class AuthServiceImpl implements AuthService {
                     .nic(request.getNic())
                     .password(passwordEncoder.encode(request.getPassword()))
                     .role(assignedRole)
+                    .lawFirmCode(admin.getLawFirmCode())
                     .isEmailVerified(true)
                     .build();
 
@@ -282,5 +351,6 @@ public class AuthServiceImpl implements AuthService {
         response.put("message", "Employee deleted successfully");
         return ResponseEntity.status(200).body(response);
     }
+
 
 }

@@ -7,4 +7,10 @@ import org.springframework.web.multipart.MultipartFile;
 public interface UserService {
 
     ResponseEntity<?> uploadProfilePicture(Long userId, MultipartFile file);
+
+    ResponseEntity<?> getUserDetailsById(Long id);
+
+    ResponseEntity<?> getAllLawFirms();
+
+    ResponseEntity<?> searchLawFirmsByLawFirmCode(String lawFirmCode);
 }

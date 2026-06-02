@@ -41,9 +41,9 @@ public class LegalCase {
     @JsonIgnoreProperties("legalCase")
     private List<Hearing> hearings;
 
-    @OneToMany(mappedBy = "legalCase", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("legalCase")
-    private List<Task> tasks;
+//    @OneToMany(mappedBy = "legalCase", cascade = CascadeType.ALL)
+//    @JsonIgnoreProperties("legalCase")
+//    private List<Task> tasks;
 
     private String lawFirmCode;
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -45,5 +46,54 @@ public class UserServiceImpl implements UserService {
         }
 
 
+    }
+
+    @Override
+    public ResponseEntity<?> getUserDetailsById(Long id) {
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+
+            HashMap<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "User details retrieved successfully");
+            response.put("data", user);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("Error retrieving user details: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllLawFirms() {
+        try {
+            var lawFirms = userRepository.findAll();
+
+            HashMap<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Law firms retrieved successfully");
+            response.put("data", lawFirms);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error retrieving law firms: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> searchLawFirmsByLawFirmCode(String lawFirmCode) {
+        try {
+            Optional<User> lawFirms = userRepository.findByLawFirmCodeContainingIgnoreCase(lawFirmCode);
+
+            HashMap<String, Object> response = new HashMap<>();
+            response.put("status", 200);
+            response.put("message", "Law firms retrieved successfully");
+            response.put("data", lawFirms);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error searching law firms: " + e.getMessage());
+        }
     }
 }

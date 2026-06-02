@@ -1,11 +1,13 @@
 package com.chambercript_for_lawyers.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class User implements UserDetails {
     private String phone;
     private String nic;
 
-    @Column(unique = true)
+    @Column(name = "law_firm_code")
     private String lawFirmCode;
 
     @Enumerated(EnumType.STRING)
@@ -40,9 +42,12 @@ public class User implements UserDetails {
     private String verificationToken;
 
     @OneToMany(mappedBy = "admin")
+    @JsonIgnoreProperties("admin")
     private List<Employee> createdEmployees;
 
     private String profilePictureUrl;
+
+    private LocalDateTime registrationDate = LocalDateTime.now();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

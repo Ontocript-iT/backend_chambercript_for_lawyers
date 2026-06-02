@@ -38,4 +38,22 @@ public class FolderController {
     public ResponseEntity<?> getFoldersByLawFirmCode(@PathVariable String lawFirmCode) {
         return folderService.getFoldersByLawFirmCode(lawFirmCode);
     }
+
+    @GetMapping("/getFolderByClientId/{clientId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getFolderByClientId(@PathVariable Long clientId) {
+        return folderService.getFoldersByClientId(clientId);
+    }
+
+    @PutMapping("/renameFolder/{folderId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> renameFolder(@PathVariable Long folderId, @RequestParam String newName) {
+        return folderService.renameFolder(folderId, newName);
+    }
+
+    @DeleteMapping("/deleteFolder/{folderId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> deleteFolder(@PathVariable Long folderId) {
+        return folderService.deleteFolder(folderId);
+    }
 }

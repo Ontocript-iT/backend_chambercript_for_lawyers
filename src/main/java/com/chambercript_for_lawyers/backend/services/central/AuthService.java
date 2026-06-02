@@ -20,4 +20,5 @@ public interface AuthService {
     ResponseEntity<?> forgotPassword(String email);
 
     ResponseEntity<?> deleteEmployee(Long employeeId);
+
 }
