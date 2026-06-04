@@ -39,8 +39,9 @@ public class ClientController {
 
     @GetMapping("/getClientsByLawFirmCode/{lawFirmCode}" )
     @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
-    public ResponseEntity<?> getClientsByLawFirmCode(@PathVariable String lawFirmCode) {
-        return clientService.getClientsByLawFirmCode(lawFirmCode);
+    public ResponseEntity<?> getClientsByLawFirmCode(@PathVariable String lawFirmCode,@RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "10") int size) {
+        return clientService.getClientsByLawFirmCode(lawFirmCode,page, size);
     }
 
 
@@ -48,5 +49,11 @@ public class ClientController {
     @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
     public ResponseEntity<?> getClientById(@PathVariable Long clientId) {
         return clientService.getClientById(clientId);
+    }
+
+    @PostMapping("/searchClientByNin/{nic}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> searchClientByNic(@PathVariable String nic) {
+        return clientService.searchClientByNic(nic);
     }
 }

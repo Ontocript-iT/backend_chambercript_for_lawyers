@@ -5,10 +5,7 @@ import com.chambercript_for_lawyers.backend.dto.request.RegisterAdminRequest;
 import com.chambercript_for_lawyers.backend.dto.request.RegisterEmployeeRequest;
 import com.chambercript_for_lawyers.backend.dto.request.SubscriptionRequest;
 import com.chambercript_for_lawyers.backend.model.*;
-import com.chambercript_for_lawyers.backend.repository.AuditLogRepository;
-import com.chambercript_for_lawyers.backend.repository.EmployeeRepository;
-import com.chambercript_for_lawyers.backend.repository.SubscriptionPaymentRepository;
-import com.chambercript_for_lawyers.backend.repository.UserRepository;
+import com.chambercript_for_lawyers.backend.repository.*;
 import com.chambercript_for_lawyers.backend.security.JwtService;
 import com.chambercript_for_lawyers.backend.services.central.AuthService;
 import com.chambercript_for_lawyers.backend.services.central.EmailService;
@@ -42,6 +39,12 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtUtil;
 
     private final EmailService emailService;
+
+    private final SubscriptionUsageRepository subscriptionUsageRepository;
+
+    private final SubscriptionRepository subscriptionRepository;
+
+    private final AdminActivityServiceImpl adminActivityService;
 
     @Override
     public ResponseEntity<?> registerAdmin(RegisterAdminRequest request) {
@@ -92,6 +95,19 @@ public class AuthServiceImpl implements AuthService {
         if (planResponse.getStatusCode().isError()) {
             return planResponse;
         }
+
+        Optional<Subscription> subscription = subscriptionRepository.findByAdminId(user.getId());
+
+        Subscription subscriptionId = subscription.orElseThrow(() -> new RuntimeException("Subscription not found for admin: " + user.getId()));
+
+        SubscriptionUsage initialUsage = SubscriptionUsage.builder()
+                .subscription(subscriptionId)
+                .currentEmployeesCount(0)
+                .usedStorageMb(0.0)
+                .build();
+
+        subscriptionUsageRepository.save(initialUsage);
+        emailService.sendTempPasswordEmail(user.getEmail(), request.getPassword());
 
         response.put("status", 201);
         response.put("message", "Admin registered. Please check email to verify.");
@@ -189,9 +205,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public boolean isTrialExpired(User user) {
+        if (user == null || user.getRegistrationDate() == null) {
+            return true;
+        }
         long daysPassed = ChronoUnit.DAYS.between(user.getRegistrationDate(), LocalDateTime.now());
-        System.out.println("Days since registration for user " + daysPassed + ": " + daysPassed);
-        return daysPassed < 14;
+
+        return daysPassed <= 14;
     }
 
     @Override
@@ -245,6 +264,7 @@ public class AuthServiceImpl implements AuthService {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
+
             Role assignedRole = Role.valueOf(request.getRole().toUpperCase());
             if (assignedRole != Role.CLERK && assignedRole != Role.JUNIOR_LAWYER) {
                 response.put("status", 400);
@@ -262,6 +282,21 @@ public class AuthServiceImpl implements AuthService {
 
             User admin = userRepository.findById(request.getAdminId())
                     .orElseThrow(() -> new RuntimeException("Admin user not found with ID: " + request.getAdminId()));
+
+
+
+            if (!admin.getRole().equals(Role.ADMIN)) {
+                response.put("status", 403);
+                response.put("message", "Only admins can register employees.");
+
+                return ResponseEntity.status(403).body(response);
+            }
+
+            ResponseEntity<?> trackingResponse = adminActivityService.trackEmployeeCreation(admin.getId());
+
+            if (trackingResponse.getStatusCode().isError()) {
+                return trackingResponse;
+            }
 
             User user = User.builder()
                     .firstName(request.getFirstName())
@@ -303,6 +338,8 @@ public class AuthServiceImpl implements AuthService {
         } catch (IllegalArgumentException e) {
             response.put("status", 400);
             response.put("message", "Invalid role format.");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         return ResponseEntity.status((int) response.get("status")).body(response);
@@ -349,6 +386,28 @@ public class AuthServiceImpl implements AuthService {
 
         response.put("status", 200);
         response.put("message", "Employee deleted successfully");
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @Override
+    public ResponseEntity<?> resetPassword(String token, String newPassword) {
+        HashMap<String, Object> response = new HashMap<>();
+        Optional<User> userOptional = userRepository.findByVerificationToken(token);
+
+        if (userOptional.isEmpty()) {
+            response.put("status", 400);
+            response.put("message", "Invalid or expired token");
+            return ResponseEntity.status(400).body(response);
+        }
+
+        User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setVerificationToken(null);
+        userRepository.save(user);
+
+        response.put("status", 200);
+        response.put("message", "Password reset successfully.");
+
         return ResponseEntity.status(200).body(response);
     }
 
