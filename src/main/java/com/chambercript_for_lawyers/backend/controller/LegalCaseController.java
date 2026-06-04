@@ -43,8 +43,9 @@ public class LegalCaseController {
 
     @GetMapping("/getFutureCases")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
-    public ResponseEntity<?> getFutureCases() {
-        return legalCaseService.getFutureCases();
+    public ResponseEntity<?> getFutureCases(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size) {
+        return legalCaseService.getFutureCases(page, size);
     }
 
 

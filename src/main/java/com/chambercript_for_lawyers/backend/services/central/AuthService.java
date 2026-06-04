@@ -21,4 +21,5 @@ public interface AuthService {
 
     ResponseEntity<?> deleteEmployee(Long employeeId);
 
+    ResponseEntity<?> resetPassword(String token, String newPassword);
 }

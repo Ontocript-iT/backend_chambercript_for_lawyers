@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 public interface ClientService {
     ResponseEntity<?> registerClient(User user, ClientRegistrationRequest request);
 
-    ResponseEntity<?> getClientsByLawFirmCode(String lawFirmCode);
+    ResponseEntity<?> getClientsByLawFirmCode(String lawFirmCode,int page ,int size);
 
     ResponseEntity<?> getClientById(Long clientId);
+
+    ResponseEntity<?> searchClientByNic(String nic);
 }

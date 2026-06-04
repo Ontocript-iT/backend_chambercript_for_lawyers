@@ -13,5 +13,5 @@ public interface LegalCaseService {
 
     ResponseEntity<?> getCaseById(Long caseId);
 
-    ResponseEntity<?> getFutureCases();
+    ResponseEntity<?> getFutureCases(int page, int size);
 }

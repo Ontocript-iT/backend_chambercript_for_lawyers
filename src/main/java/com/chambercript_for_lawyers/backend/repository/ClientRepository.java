@@ -1,6 +1,8 @@
 package com.chambercript_for_lawyers.backend.repository;
 
 import com.chambercript_for_lawyers.backend.model.Client;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,5 +15,5 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     Optional<Client> findFirstByOrderByIdDesc();
 
-    List<Client> findByLawFirmCode(String lawFirmCode);
+    Page<Client> findByLawFirmCode(String lawFirmCode, Pageable pageable);
 }

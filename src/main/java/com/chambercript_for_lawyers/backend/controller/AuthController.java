@@ -50,4 +50,11 @@ public class AuthController {
         String email = request.get("email");
         return authService.forgotPassword(email);
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody HashMap<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        return authService.resetPassword(token, newPassword);
+    }
 }

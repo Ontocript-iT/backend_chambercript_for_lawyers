@@ -26,6 +26,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final PlanLimitServiceImpl limitService;
 
+    private final AdminActivityServiceImpl adminActivityService;
 
     private final FolderRepository folderRepository;
 
@@ -45,6 +46,9 @@ public class DocumentServiceImpl implements DocumentService {
             Folder folder = folderRepository.findById(folderId)
                     .orElseThrow(() -> new RuntimeException("Folder not found"));
 
+            double fileSizeMb = file.getSize() / (1024.0 * 1024.0);
+
+            adminActivityService.trackFileUpload(lawFirmCode, uploadedBy, file.getOriginalFilename(), fileSizeMb);
 //            Optional<LawFirm> firm = firmRepository.findByLawFirmCode(lawFirmCode);
 //
 //            if (limitService.isStorageLimitExceeded(firm.get(), file.getSize())) {

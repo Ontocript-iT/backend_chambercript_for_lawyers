@@ -11,6 +11,9 @@ import com.chambercript_for_lawyers.backend.repository.LegalCaseRepository;
 import com.chambercript_for_lawyers.backend.services.central.FolderService;
 import com.chambercript_for_lawyers.backend.services.central.LegalCaseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,15 +138,25 @@ public class LegalCaseServiceImpl implements LegalCaseService {
     }
 
     @Override
-    public ResponseEntity<?> getFutureCases() {
+    public ResponseEntity<?> getFutureCases(int page, int size) {
         try {
-            List<LegalCase> cases = legalCaseRepository.findFutureCases();
+            // Create Pageable object (Page numbers are 0-indexed)
+            Pageable pageable = PageRequest.of(page, size);
+
+            // Fetch the paginated result
+            Page<LegalCase> casePage = legalCaseRepository.findFutureCases(pageable);
+            List<LegalCase> cases = casePage.getContent();
 
             HashMap<String, Object> response = new HashMap<>();
             response.put("status", 200);
             response.put("message", "Future cases retrieved successfully");
-            response.put("caseCount", cases.size());
             response.put("data", cases);
+
+            // Add Pagination Metadata
+            response.put("currentPage", casePage.getNumber());
+            response.put("totalItems", casePage.getTotalElements());
+            response.put("totalPages", casePage.getTotalPages());
+            response.put("caseCount", cases.size()); // Number of items on the current page
 
             return ResponseEntity.ok(response);
 
