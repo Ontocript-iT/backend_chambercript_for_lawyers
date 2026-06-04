@@ -8,6 +8,9 @@ import com.chambercript_for_lawyers.backend.repository.AuditLogRepository;
 import com.chambercript_for_lawyers.backend.repository.ClientRepository;
 import com.chambercript_for_lawyers.backend.services.central.ClientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,12 +34,10 @@ public class ClientServiceImpl implements ClientService {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
-            // 1. SANITIZE INPUTS: Convert empty strings to null to prevent SQL Duplicate "" errors
             String email = (request.getEmail() != null && request.getEmail().trim().isEmpty()) ? null : request.getEmail();
             String nic = (request.getNic() != null && request.getNic().trim().isEmpty()) ? null : request.getNic();
             String phone = (request.getPhone() != null && request.getPhone().trim().isEmpty()) ? null : request.getPhone();
 
-            // 2. VALIDATION CHECKS (Using the sanitized variables)
             if (nic != null && clientRepository.findByNic(nic).isPresent()) {
                 response.put("status", 400);
                 response.put("message", "A client with this NIC already exists.");
@@ -53,7 +54,6 @@ public class ClientServiceImpl implements ClientService {
                 return ResponseEntity.status(400).body(response);
             }
 
-            // 3. BUILD THE CLIENT (Pass the sanitized variables here, NOT the raw request variables)
             Client client = Client.builder()
                     .name(request.getName())
                     .lawFirmCode(user.getLawFirmCode())
@@ -66,7 +66,7 @@ public class ClientServiceImpl implements ClientService {
 
             client = clientRepository.save(client);
 
-            // 4. AUDIT LOG
+
             AuditLog auditLog = AuditLog.builder()
                     .lawFirmCode(user.getLawFirmCode())
                     .action("CREATE")
@@ -86,7 +86,6 @@ public class ClientServiceImpl implements ClientService {
             return ResponseEntity.status(201).body(response);
 
         } catch (Exception e) {
-            // 5. CLEAN ERROR HANDLING: Return JSON instead of throwing a raw Java Exception
             response.put("status", 500);
             response.put("message", "Failed to register client: " + e.getMessage());
             return ResponseEntity.status(500).body(response);
@@ -94,11 +93,15 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ResponseEntity<?> getClientsByLawFirmCode(String lawFirmCode) {
+    public ResponseEntity<?> getClientsByLawFirmCode(String lawFirmCode, int page, int size) {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
-            List<Client> clients = clientRepository.findByLawFirmCode(lawFirmCode);
+            Pageable pageable = PageRequest.of(page, size);
+
+
+            Page<Client> clientPage = clientRepository.findByLawFirmCode(lawFirmCode, pageable);
+            List<Client> clients = clientPage.getContent();
 
             if (clients.isEmpty()) {
                 response.put("status", 404);
@@ -109,6 +112,11 @@ public class ClientServiceImpl implements ClientService {
             response.put("status", 200);
             response.put("message", "Clients retrieved successfully.");
             response.put("data", clients);
+
+            response.put("currentPage", clientPage.getNumber());
+            response.put("totalItems", clientPage.getTotalElements());
+            response.put("totalPages", clientPage.getTotalPages());
+            response.put("pageSize", clientPage.getSize());
 
             return ResponseEntity.ok(response);
 
@@ -129,6 +137,32 @@ public class ClientServiceImpl implements ClientService {
             if (clientOpt.isEmpty()) {
                 response.put("status", 404);
                 response.put("message", "Client not found with the provided ID.");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            response.put("status", 200);
+            response.put("message", "Client retrieved successfully.");
+            response.put("data", clientOpt.get());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "An error occurred while retrieving the client: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> searchClientByNic(String nic) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<Client> clientOpt = clientRepository.findByNic(nic);
+
+            if (clientOpt.isEmpty()) {
+                response.put("status", 404);
+                response.put("message", "Client not found with the provided NIC.");
                 return ResponseEntity.status(404).body(response);
             }
 
