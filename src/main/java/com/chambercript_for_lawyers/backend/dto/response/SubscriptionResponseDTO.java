@@ -1,5 +1,6 @@
 package com.chambercript_for_lawyers.backend.dto.response;
 
+import com.chambercript_for_lawyers.backend.enums.SmsPlan;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,4 +14,10 @@ public class SubscriptionResponseDTO {
     private Long adminId;
     private String adminName;
     private boolean isActive;
+    private SmsPlan smsPlan;
+
+    // Add to your existing SubscriptionResponseDTO
+    private String smsPlanType;
+    private Integer smsQuota;
+
 }

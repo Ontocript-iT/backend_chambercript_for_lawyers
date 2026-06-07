@@ -9,6 +9,10 @@ class RegisterEmployeeRequest {
     private String email;
     private String nic;
     private String password;
-    private String role; // CLERK or MANAGER
-    private Long adminId; // ID of the admin registering the employee
+    private String role;
+    private Long adminId;
+    private String phoneNumber;
+    private String identifyType;
+    private String imageUrl_1;
+    private String imageUrl_2;
 }

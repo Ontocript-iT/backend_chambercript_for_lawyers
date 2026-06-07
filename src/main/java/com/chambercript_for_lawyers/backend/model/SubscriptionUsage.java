@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "subscription_usages")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionUsage {
@@ -15,7 +15,7 @@ public class SubscriptionUsage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "subscription_id", referencedColumnName = "id")
     private Subscription subscription;
 
@@ -26,4 +26,8 @@ public class SubscriptionUsage {
     @Column(nullable = false)
     @Builder.Default
     private Double usedStorageMb = 0.0; // Track in MB for accuracy
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer usedSmsCount = 0;
 }

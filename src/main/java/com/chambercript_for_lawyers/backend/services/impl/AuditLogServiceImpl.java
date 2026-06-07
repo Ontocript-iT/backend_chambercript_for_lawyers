@@ -6,6 +6,9 @@ import com.chambercript_for_lawyers.backend.model.AuditLog;
 import com.chambercript_for_lawyers.backend.repository.AuditLogRepository;
 import com.chambercript_for_lawyers.backend.services.central.AuditLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -46,25 +49,32 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
-    public ResponseEntity<?> getLogsByLawFirmCode(String LawFirmCode) {
+    public ResponseEntity<?> getLogsByLawFirmCode(String lawFirmCode, int page, int size) {
         HashMap<String, Object> response = new HashMap<>();
 
         try {
-            List<AuditLog> logs = auditLogRepository.findByLawFirmCodeOrderByTimestampDesc(LawFirmCode);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<AuditLog> logPage = auditLogRepository.findByLawFirmCodeOrderByTimestampDesc(lawFirmCode, pageable);
 
-            if (logs.isEmpty()) {
+            if (logPage.isEmpty()) {
                 response.put("status", 404);
-                response.put("message", "No audit logs found for user code: " + LawFirmCode);
+                response.put("message", "No audit logs found for user code: " + lawFirmCode);
                 return ResponseEntity.status(404).body(response);
             }
 
-            List<AuditLogResponse> logResponses = logs.stream()
+            List<AuditLogResponse> logResponses = logPage.getContent().stream()
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             response.put("status", 200);
             response.put("message", "Audit logs retrieved successfully.");
             response.put("data", logResponses);
+
+            response.put("currentPage", logPage.getNumber());
+            response.put("totalItems", logPage.getTotalElements());
+            response.put("totalPages", logPage.getTotalPages());
+            response.put("pageSize", logPage.getSize());
+
             return ResponseEntity.status(200).body(response);
 
         } catch (Exception e) {
@@ -73,6 +83,7 @@ public class AuditLogServiceImpl implements AuditLogService {
             return ResponseEntity.status(500).body(response);
         }
     }
+
 
     @Override
     public ResponseEntity<?> getAllLogs() {
@@ -94,7 +105,6 @@ public class AuditLogServiceImpl implements AuditLogService {
         }
     }
 
-    // Helper method to convert Entity to DTO
     private AuditLogResponse mapToResponse(AuditLog log) {
         return AuditLogResponse.builder()
                 .id(log.getId())
@@ -102,6 +112,7 @@ public class AuditLogServiceImpl implements AuditLogService {
                 .action(log.getAction())
                 .entityName(log.getEntityName())
                 .entityId(log.getEntityId())
+                .performedBy(log.getActorName())
                 .details(log.getDetails())
                 .timestamp(log.getTimestamp())
                 .build();

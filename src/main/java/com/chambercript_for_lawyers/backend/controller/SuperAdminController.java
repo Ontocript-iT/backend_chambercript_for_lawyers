@@ -18,8 +18,9 @@ public class SuperAdminController {
 
     @GetMapping("/subscriptions")
     @PreAuthorize(("hasRole('SUPER_ADMIN')"))
-    public ResponseEntity<?> getAllSubscriptions() {
-        return subscriptionService.getAllSubscriptions();
+    public ResponseEntity<?> getAllSubscriptions(@RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "10") int size) {
+        return subscriptionService.getAllSubscriptions(page, size);
 
     }
 
@@ -31,8 +32,9 @@ public class SuperAdminController {
 
     @GetMapping("/getInactiveSubscriptions")
     @PreAuthorize(("hasRole('SUPER_ADMIN')"))
-    public ResponseEntity<?> getInactiveSubscriptions() {
-        return subscriptionService.getInactiveSubscriptions();
+    public ResponseEntity<?> getInactiveSubscriptions(@RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "10") int size) {
+        return subscriptionService.getInactiveSubscriptions(page, size);
     }
 
     @PostMapping("/searchSubscriptionsByAdminEmailOrNic/{query}")
@@ -43,8 +45,9 @@ public class SuperAdminController {
 
     @GetMapping("/getAllLawFirms")
     @PreAuthorize(("hasRole('SUPER_ADMIN')"))
-    public ResponseEntity<?> getAllLawFirms() {
-        return userService.getAllLawFirms();
+    public ResponseEntity<?> getAllLawFirms(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size) {
+        return userService.getAllLawFirms(page, size);
     }
 
 
