@@ -21,8 +21,9 @@ public class AuditLogController {
 
     @GetMapping("/user/{lawFirmCode}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getLogsByLawFirmCode(@PathVariable String lawFirmCode) {
-        return auditLogService.getLogsByLawFirmCode(lawFirmCode);
+    public ResponseEntity<?> getLogsByLawFirmCode(@PathVariable String lawFirmCode,@RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size) {
+        return auditLogService.getLogsByLawFirmCode(lawFirmCode,page, size);
     }
 
     @GetMapping("/all")

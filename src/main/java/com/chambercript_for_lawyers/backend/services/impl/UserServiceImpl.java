@@ -5,6 +5,9 @@ import com.chambercript_for_lawyers.backend.repository.UserRepository;
 import com.chambercript_for_lawyers.backend.services.BunnyNetStorageService;
 import com.chambercript_for_lawyers.backend.services.central.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,18 +69,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getAllLawFirms() {
+    public ResponseEntity<?> getAllLawFirms(int page, int size) {
         try {
-            var lawFirms = userRepository.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+
+            Page<User> lawFirmPage = userRepository.findAll(pageable);
 
             HashMap<String, Object> response = new HashMap<>();
             response.put("status", 200);
             response.put("message", "Law firms retrieved successfully");
-            response.put("data", lawFirms);
+
+            response.put("data", lawFirmPage.getContent());
+
+            response.put("currentPage", lawFirmPage.getNumber());
+            response.put("totalItems", lawFirmPage.getTotalElements());
+            response.put("totalPages", lawFirmPage.getTotalPages());
+            response.put("pageSize", lawFirmPage.getSize());
+
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error retrieving law firms: " + e.getMessage());
+            HashMap<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", 500);
+            errorResponse.put("message", "Error retrieving law firms: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 

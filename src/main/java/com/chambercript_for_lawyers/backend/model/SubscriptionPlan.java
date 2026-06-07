@@ -1,5 +1,6 @@
 package com.chambercript_for_lawyers.backend.model;
 
+import com.chambercript_for_lawyers.backend.enums.SmsPlan;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,4 +18,9 @@ public class SubscriptionPlan {
     private Integer storageGb;
     private Integer maxRecords;
     private String price;
+    private SmsPlan smsPlan;
+
+    // Add to your existing SubscriptionResponseDTO
+    private String smsPlanType;
+    private Integer smsQuota;
 }

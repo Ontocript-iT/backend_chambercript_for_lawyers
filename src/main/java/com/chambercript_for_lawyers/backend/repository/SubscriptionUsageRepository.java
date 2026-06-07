@@ -1,5 +1,6 @@
 package com.chambercript_for_lawyers.backend.repository;
 
+import com.chambercript_for_lawyers.backend.model.Subscription;
 import com.chambercript_for_lawyers.backend.model.SubscriptionUsage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -7,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Repository
 public interface SubscriptionUsageRepository extends JpaRepository<SubscriptionUsage, Long> {
@@ -27,4 +30,8 @@ public interface SubscriptionUsageRepository extends JpaRepository<SubscriptionU
     @Transactional
     @Query("UPDATE SubscriptionUsage s SET s.usedStorageMb = s.usedStorageMb + :amount WHERE s.id = :id")
     void incrementStorageUsed(@Param("id") Long id, @Param("amount") double amount);
+
+    Optional<SubscriptionUsage> findBySubscriptionId(Long id);
+
+    Optional<SubscriptionUsage> findBySubscription(Subscription subscription);
 }
