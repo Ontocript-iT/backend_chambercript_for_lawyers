@@ -10,11 +10,13 @@ public interface SubscriptionService {
 
     ResponseEntity<?> getCurrentSubscription(Long adminId);
 
-    ResponseEntity<?> getAllSubscriptions();
+    ResponseEntity<?> getAllSubscriptions(int page, int size);
 
     ResponseEntity<?> activeSubscriptionById(Long id);
 
     ResponseEntity<?> searchSubscriptionsByAdminEmailOrNic(String query);
 
-    ResponseEntity<?> getInactiveSubscriptions();
+    ResponseEntity<?> getInactiveSubscriptions(int page, int size);
+
+    ResponseEntity<?> updateSmsPlan(Long adminId, SubscriptionRequest request);
 }

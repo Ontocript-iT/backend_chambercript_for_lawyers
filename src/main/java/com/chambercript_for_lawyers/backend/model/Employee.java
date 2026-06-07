@@ -27,5 +27,10 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
     private User admin;
+    private String identifyType;
+    private String imageUrl_1;
+    private String imageUrl_2;
+
+
 
 }

@@ -40,6 +40,10 @@ public class AdminServiceImpl implements AdminService {
                     empMap.put("name", fullName);
                     empMap.put("email", emp.getUserAccount().getEmail());
                     empMap.put("phone", emp.getUserAccount().getPhone());
+                    empMap.put("image1", emp.getImageUrl_1());
+                    empMap.put("image2", emp.getImageUrl_2());
+                    empMap.put("identificationNumber", emp.getUserAccount().getNic());
+                    empMap.put("identifyType", emp.getIdentifyType());
                     empMap.put("role", emp.getUserAccount().getRole());
                     empMap.put("userId", emp.getUserAccount().getId());
                     empMap.put("profilePictureUrl", emp.getUserAccount().getProfilePictureUrl());

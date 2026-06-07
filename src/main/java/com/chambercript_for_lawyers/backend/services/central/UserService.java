@@ -10,7 +10,7 @@ public interface UserService {
 
     ResponseEntity<?> getUserDetailsById(Long id);
 
-    ResponseEntity<?> getAllLawFirms();
+    ResponseEntity<?> getAllLawFirms(int page, int size);
 
     ResponseEntity<?> searchLawFirmsByLawFirmCode(String lawFirmCode);
 }

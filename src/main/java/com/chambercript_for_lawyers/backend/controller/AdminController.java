@@ -4,9 +4,11 @@ import com.chambercript_for_lawyers.backend.dto.request.RegisterEmployeeRequest;
 import com.chambercript_for_lawyers.backend.services.central.AdminService;
 import com.chambercript_for_lawyers.backend.services.central.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -18,9 +20,13 @@ public class AdminController {
     private final AuthService authService;
     private final AdminService adminService;
 
-    @PostMapping("/register-employee")
-    public ResponseEntity<?> registerEmployee(@RequestBody RegisterEmployeeRequest request) {
-       return authService.registerEmployee(request);
+    @PostMapping(value = "/register-employee", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registerEmployee(
+            @ModelAttribute RegisterEmployeeRequest request,
+            @RequestParam(value = "identityImage1", required = false) MultipartFile identityImage1,
+            @RequestParam(value = "identityImage2", required = false) MultipartFile identityImage2) {
+
+        return authService.registerEmployee(request, identityImage1, identityImage2);
     }
 
     @PostMapping("/delete-employee/{employeeId}")

@@ -32,6 +32,13 @@ public class SubscriptionController {
         return subscriptionService.updatePlan(adminId, request);
     }
 
+    @PutMapping("/updateSmsPlan")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateSmsPlan(Principal principal, @RequestBody SubscriptionRequest request) {
+        Long adminId = getUserIdFromPrincipal(principal);
+        return subscriptionService.updateSmsPlan(adminId, request);
+    }
+
     private Long getUserIdFromPrincipal(Principal principal) {
         if (principal == null) throw new RuntimeException("Unauthorized");
         return userRepository.findByEmail(principal.getName())
