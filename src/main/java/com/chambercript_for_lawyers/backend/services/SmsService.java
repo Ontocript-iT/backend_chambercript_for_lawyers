@@ -71,7 +71,12 @@ public class SmsService {
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
         SubscriptionUsage usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId())
-                .orElseThrow(() -> new RuntimeException("Usage record not found"));
+                .orElseGet(() -> SubscriptionUsage.builder()
+                        .subscription(subscription)
+                        .usedSmsCount(50)
+                        .currentEmployeesCount(0)
+                        .usedStorageMb(0.0)
+                        .build());
 
         SmsPlan currentSmsPlan = subscription.getSmsPlan();
 
@@ -80,9 +85,9 @@ public class SmsService {
         }
 
         if (currentSmsPlan.getQuota() == -1 || usage.getUsedSmsCount() < currentSmsPlan.getQuota()) {
+            System.out.println("Current SMS usage: " + usage.getUsedSmsCount() + "/" + (currentSmsPlan.getQuota() == -1 ? "Unlimited" : currentSmsPlan.getQuota()));
             usage.setUsedSmsCount(4);
             subscriptionUsageRepository.save(usage);
-
             return true;
         }
 
