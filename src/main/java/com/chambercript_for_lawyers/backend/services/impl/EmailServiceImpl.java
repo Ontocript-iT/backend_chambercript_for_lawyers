@@ -47,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
             // new password and token back to your Spring Boot API.
             message.setText("You have requested to reset your password.\n\n" +
                     "Please click the link below to set a new password:\n" +
-                    "http://localhost:8080/api/auth/reset-password?token=" + token + "\n\n" +
+                    "https://ccriptlawyer.tech/auth/reset-password?token=" + token + "\n\n" +
                     "If you did not request this, please ignore this email.");
 
             mailSender.send(message);
