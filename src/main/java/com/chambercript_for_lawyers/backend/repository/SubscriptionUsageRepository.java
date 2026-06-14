@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -34,4 +35,19 @@ public interface SubscriptionUsageRepository extends JpaRepository<SubscriptionU
     Optional<SubscriptionUsage> findBySubscriptionId(Long id);
 
     Optional<SubscriptionUsage> findBySubscription(Subscription subscription);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE SubscriptionUsage su SET su.usedSmsCount = su.usedSmsCount + 1 WHERE su.subscription.id = :usageId")
+    void incrementSmsCountById(@Param("usageId") Long usageId);
+
+    @Modifying
+    @Query("UPDATE SubscriptionUsage su SET su.usedSmsCount = 0 " +
+            "WHERE su.subscription.id IN " +
+            "(SELECT s.id FROM Subscription s WHERE s.smsPlan = 'NONE' AND s.isActive = true)")
+    int resetSmsUsageForNonePlans();
+
+    @Query("SELECT su FROM SubscriptionUsage su JOIN FETCH su.subscription s " +
+            "WHERE s.isActive = true AND s.smsPlan != 'NONE'")
+    List<SubscriptionUsage> findActivePaidPlanUsages();
 }

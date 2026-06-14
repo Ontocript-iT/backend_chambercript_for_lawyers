@@ -4,6 +4,7 @@ import com.chambercript_for_lawyers.backend.model.Subscription;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,4 +18,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findSubscriptionsByAdminEmailOrNic(@Param("query") String query);
 
     Page<Subscription> findByIsActiveFalse(Pageable pageable);
+
 }

@@ -7,17 +7,23 @@ import com.chambercript_for_lawyers.backend.model.SubscriptionUsage;
 import com.chambercript_for_lawyers.backend.repository.SubscriptionRepository;
 import com.chambercript_for_lawyers.backend.repository.SubscriptionUsageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j // System.out.println වෙනුවට Log භාවිතා කිරීම සඳහා
 public class SmsService {
 
     @Value("${textlk.api.url}")
@@ -29,12 +35,13 @@ public class SmsService {
     @Value("${textlk.sender.id}")
     private String senderId;
 
+    // සටහන: RestTemplate එක මෙලෙස new කරනවාට වඩා, @Bean එකක් ලෙස සාදා inject කිරීම වඩාත් සුදුසුයි.
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final SubscriptionRepository subscriptionRepository;
-
     private final SubscriptionUsageRepository subscriptionUsageRepository;
 
+    @Transactional
     public void sendSms(String phoneNumber, String messageText) {
         try {
             if (phoneNumber.startsWith("0")) {
@@ -56,27 +63,59 @@ public class SmsService {
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK || response.getStatusCode() == HttpStatus.CREATED) {
-                System.out.println("SMS sent successfully to " + phoneNumber);
+                log.info("SMS sent successfully to {}", phoneNumber);
             } else {
-                System.err.println("Failed to send SMS. Response: " + response.getBody());
+                log.error("Failed to send SMS. Response: {}", response.getBody());
+                // වැදගත්: SMS එක යැවුණේ නැත්නම් Exception එකක් Throw කළ යුතුයි.
+                // නැතහොත් Database එකෙන් අඩු වූ SMS ගණන Rollback වන්නේ නැත.
+                throw new RuntimeException("Failed to send SMS. API Response: " + response.getBody());
             }
         } catch (Exception e) {
-            System.err.println("SMS Sending Error: " + e.getMessage());
+            log.error("SMS Sending Error: {}", e.getMessage());
+            // වැදගත්: මෙතන Exception එක ගිලගන්න එපා (catch කරලා නිකන් ඉන්න එපා).
+            // අනිවාර්යයෙන්ම re-throw කරන්න. එතකොට තමයි @Transactional එකට තේරෙන්නේ අවුලක් ගියා කියලා.
+            throw new RuntimeException("Error occurred while sending SMS", e);
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean canSendSmsAndIncrement(Long adminId) {
         Subscription subscription = subscriptionRepository.findByAdminId(adminId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-        SubscriptionUsage usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId())
-                .orElseGet(() -> SubscriptionUsage.builder()
-                        .subscription(subscription)
-                        .usedSmsCount(50)
-                        .currentEmployeesCount(0)
-                        .usedStorageMb(0.0)
-                        .build());
+        Optional<SubscriptionUsage> usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId());
+
+        SmsPlan currentSmsPlan = subscription.getSmsPlan();
+
+//        if (currentSmsPlan == SmsPlan.NONE) {
+//            return false;
+//        }
+
+        if (usage.isPresent()) {
+            log.info("Found subscription usage for subscription ID: {}", subscription.getId());
+            SubscriptionUsage subscriptionUsage = usage.get();
+            int smsUsed = subscriptionUsage.getUsedSmsCount();
+            int smsLimit = currentSmsPlan.getQuota();
+
+            if (smsUsed < smsLimit) {
+                log.info("Current SMS usage: {}/{}", smsUsed, smsLimit);
+//                subscriptionUsage.setUsedSmsCount(smsUsed + 1);
+                subscriptionUsageRepository.incrementSmsCountById(subscription.getId());
+                return true;
+            } else {
+                log.warn("SMS limit reached for Admin ID: {}", adminId);
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean checkSmsCanSend(Long adminId) {
+        Subscription subscription = subscriptionRepository.findByAdminId(adminId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
+        Optional<SubscriptionUsage> usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId());
 
         SmsPlan currentSmsPlan = subscription.getSmsPlan();
 
@@ -84,13 +123,63 @@ public class SmsService {
             return false;
         }
 
-        if (currentSmsPlan.getQuota() == -1 || usage.getUsedSmsCount() < currentSmsPlan.getQuota()) {
-            System.out.println("Current SMS usage: " + usage.getUsedSmsCount() + "/" + (currentSmsPlan.getQuota() == -1 ? "Unlimited" : currentSmsPlan.getQuota()));
-            usage.setUsedSmsCount(4);
-            subscriptionUsageRepository.save(usage);
-            return true;
+        if (usage.isPresent()) {
+            log.info("Found subscription usage for subscription ID: {}", subscription.getId());
+            SubscriptionUsage subscriptionUsage = usage.get();
+            int smsUsed = subscriptionUsage.getUsedSmsCount();
+            int smsLimit = currentSmsPlan.getQuota();
+
+            log.info("Current SMS usage: {}/{}", smsUsed, smsLimit);
+            return smsUsed < smsLimit;
         }
 
         return false;
+    }
+
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 1 * ?")
+    public void resetMonthlySmsUsage() {
+        log.info("Starting monthly SMS usage reset for active NONE plans...");
+
+        int updatedRecords = subscriptionUsageRepository.resetSmsUsageForNonePlans();
+
+        log.info("Successfully reset SMS usage to 0 for {} subscription(s).", updatedRecords);
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 1 * ?")
+    public void processMonthlySmsRollover() {
+        log.info("Starting monthly SMS plan evaluation and usage reset...");
+
+        List<SubscriptionUsage> paidUsages = subscriptionUsageRepository.findActivePaidPlanUsages();
+        int downgradedCount = 0;
+
+        for (SubscriptionUsage usage : paidUsages) {
+            Subscription subscription = usage.getSubscription();
+            SmsPlan currentPlan = subscription.getSmsPlan();
+
+            int smsUsed = usage.getUsedSmsCount();
+            int smsLimit = currentPlan.getQuota();
+
+            if (smsUsed >= smsLimit) {
+                log.info("Subscription ID {} exceeded quota ({}/{}). Downgrading to NONE.",
+                        subscription.getId(), smsUsed, smsLimit);
+
+                subscription.setSmsPlan(SmsPlan.NONE);
+                downgradedCount++;
+            }
+
+            usage.setUsedSmsCount(0);
+        }
+
+        if (!paidUsages.isEmpty()) {
+            subscriptionUsageRepository.saveAll(paidUsages);
+        }
+
+        int resetNoneCount = subscriptionUsageRepository.resetSmsUsageForNonePlans();
+
+        log.info("Monthly SMS rollover complete. Downgraded {} plans to NONE. Reset usage for {} NONE plans.",
+                downgradedCount, resetNoneCount);
     }
 }

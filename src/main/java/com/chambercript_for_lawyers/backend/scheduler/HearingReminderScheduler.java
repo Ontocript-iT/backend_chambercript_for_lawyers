@@ -27,8 +27,8 @@ public class HearingReminderScheduler {
 
 
     // Everyday 8 am
-    @Transactional(readOnly = true)
-//    @Scheduled(cron = "0 5 00 * * ?")
+    @Transactional
+    @Scheduled(cron = "0 11 18 * * ?")
     public void sendUpcomingHearingReminders() {
         System.out.println("Running automated SMS reminder job...");
 
@@ -38,20 +38,19 @@ public class HearingReminderScheduler {
             LocalDate targetHearingDate = (schedule == ReminderSchedule.ONE_MONTH_BEFORE)
                     ? today.plusMonths(1)
                     : today.plusDays(schedule.getDays());
-
             List<Hearing> upcomingHearings = hearingRepository.findByHearingDateAndSchedule(targetHearingDate, schedule);
             for (Hearing hearing : upcomingHearings) {
                 processAndSendSms(hearing, schedule);
             }
         }
-
         List<Hearing> customHearings = hearingRepository.findByCustomReminderDate(today);
         for (Hearing hearing : customHearings) {
             processAndSendSms(hearing, null);
         }
     }
 
-    private void processAndSendSms(Hearing hearing, ReminderSchedule schedule) {
+    @Transactional(readOnly = true)
+    public void processAndSendSms(Hearing hearing, ReminderSchedule schedule) {
         String lawFirmCode = hearing.getLawFirmCode();
 
         if (lawFirmCode == null) {
