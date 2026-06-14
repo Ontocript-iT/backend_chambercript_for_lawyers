@@ -4,6 +4,7 @@ import com.chambercript_for_lawyers.backend.dto.request.ChangePasswordRequest;
 import com.chambercript_for_lawyers.backend.dto.request.RegisterAdminRequest;
 import com.chambercript_for_lawyers.backend.model.User;
 import com.chambercript_for_lawyers.backend.repository.UserRepository;
+import com.chambercript_for_lawyers.backend.services.SmsService;
 import com.chambercript_for_lawyers.backend.services.central.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,9 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthService authService;
+
+
+
 
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterAdminRequest request) {

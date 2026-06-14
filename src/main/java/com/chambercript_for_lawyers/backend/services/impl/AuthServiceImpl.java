@@ -8,6 +8,7 @@ import com.chambercript_for_lawyers.backend.model.*;
 import com.chambercript_for_lawyers.backend.repository.*;
 import com.chambercript_for_lawyers.backend.security.JwtService;
 import com.chambercript_for_lawyers.backend.services.BunnyNetStorageService;
+import com.chambercript_for_lawyers.backend.services.SmsService;
 import com.chambercript_for_lawyers.backend.services.central.AuthService;
 import com.chambercript_for_lawyers.backend.services.central.EmailService;
 import com.sun.security.jgss.GSSUtil;
@@ -31,6 +32,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuditLogRepository auditLogRepository;
+
+    private final SmsService smsService;
 
     private final SubscriptionPaymentRepository subscriptionPaymentRepository;
 
@@ -172,6 +175,8 @@ public class AuthServiceImpl implements AuthService {
 
         boolean isPaymentCompleted = !paymentMessage.toLowerCase().contains("pending");
 
+        boolean isSendSms=smsService.checkSmsCanSend(user.getId());
+
 
         if (isTrialExpired(user)) {
             boolean hasPaid = subscriptionPaymentRepository.existsByLawFirmCodeAndIsPaidTrue(user.getLawFirmCode());
@@ -185,6 +190,7 @@ public class AuthServiceImpl implements AuthService {
                 safeUserData.put("isPaymentCompleted", true);
                 safeUserData.put("role", user.getRole());
                 response.put("status", 200);
+                response.put("isSendSms", isSendSms);
                 response.put("token", token);
                 response.put("user", safeUserData);
                 response.put("message", "Trial period expired. Please complete payment to continue using the service.");

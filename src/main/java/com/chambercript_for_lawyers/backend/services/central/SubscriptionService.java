@@ -19,4 +19,6 @@ public interface SubscriptionService {
     ResponseEntity<?> getInactiveSubscriptions(int page, int size);
 
     ResponseEntity<?> updateSmsPlan(Long adminId, SubscriptionRequest request);
+
+    ResponseEntity<?> getRemainingSms(Long adminId);
 }
