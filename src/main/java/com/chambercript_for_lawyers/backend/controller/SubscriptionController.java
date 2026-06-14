@@ -52,4 +52,11 @@ public class SubscriptionController {
         Long adminId = getUserIdFromPrincipal(principal);
         return subscriptionService.getCurrentSubscription(adminId);
     }
+
+    @GetMapping("/remainingSms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getRemainingSms(Principal principal) {
+        Long adminId = getUserIdFromPrincipal(principal);
+        return subscriptionService.getRemainingSms(adminId);
+    }
 }

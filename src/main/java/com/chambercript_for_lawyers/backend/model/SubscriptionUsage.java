@@ -9,6 +9,8 @@ import lombok.*;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class SubscriptionUsage {
 
     @Id

@@ -1,7 +1,7 @@
 package com.chambercript_for_lawyers.backend.enums;
 
 public enum SmsPlan {
-    NONE(0, 0.0),
+    NONE(500, 0.0),
     BASIC(1000, 2500.0),
     PRO(2000, 4500.0),
     UNLIMITED(-1, 7000.0); // -1 signifies unlimited

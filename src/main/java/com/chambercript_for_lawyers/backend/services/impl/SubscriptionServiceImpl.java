@@ -2,6 +2,7 @@ package com.chambercript_for_lawyers.backend.services.impl;
 
 import com.chambercript_for_lawyers.backend.dto.request.SubscriptionRequest;
 import com.chambercript_for_lawyers.backend.dto.response.SubscriptionResponseDTO;
+import com.chambercript_for_lawyers.backend.enums.SmsPlan;
 import com.chambercript_for_lawyers.backend.model.PlanType;
 import com.chambercript_for_lawyers.backend.model.Subscription;
 import com.chambercript_for_lawyers.backend.model.SubscriptionUsage;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -426,4 +428,53 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
 
-}
+    @Override
+    public ResponseEntity<?> getRemainingSms(Long adminId) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<Subscription> subOpt = subscriptionRepository.findByAdminId(adminId);
+
+            if (subOpt.isEmpty()) {
+                response.put("status", 404);
+                response.put("message", "Subscription not found.");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            Subscription sub = subOpt.get();
+
+            response.put("status", 200);
+            response.put("message", "Remaining SMS retrieved successfully.");
+            response.put("data",getRemainingSmsByAdminId(adminId));
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    public  Integer getRemainingSmsByAdminId(Long adminId) {
+        Subscription subscription = subscriptionRepository.findByAdminId(adminId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
+        Optional<SubscriptionUsage> usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId());
+
+        SmsPlan currentSmsPlan = subscription.getSmsPlan();
+
+
+
+        if (usage.isPresent()) {
+            SubscriptionUsage subscriptionUsage = usage.get();
+            int smsUsed = subscriptionUsage.getUsedSmsCount();
+            int smsLimit = currentSmsPlan.getQuota();
+
+            return Math.max(smsLimit - smsUsed, 0);
+
+
+
+        }
+        return currentSmsPlan.getQuota();
+    }
+    }
