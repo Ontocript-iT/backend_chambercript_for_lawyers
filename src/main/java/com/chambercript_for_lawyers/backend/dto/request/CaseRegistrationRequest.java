@@ -1,5 +1,7 @@
 package com.chambercript_for_lawyers.backend.dto.request;
 
+import com.chambercript_for_lawyers.backend.model.CaseType;
+import com.chambercript_for_lawyers.backend.model.Court;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -14,7 +16,7 @@ public class CaseRegistrationRequest {
     private String assignedLawyer;
 
     private Long clientId;
-    private Long caseTypeId;
-    private Long courtId;
+    private CaseType caseTypeId;
+    private Court courtId;
     private String lawFirmCode;
 }

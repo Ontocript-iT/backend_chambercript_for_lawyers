@@ -30,6 +30,8 @@ public class AuditLogServiceImpl implements AuditLogService {
             AuditLog auditLog = AuditLog.builder()
                     .lawFirmCode(lawFirmCode)
                     .action(request.getAction())
+                    .actorName(request.getActorName())
+                    .actorId(request.getActorId())
                     .entityName(request.getEntityName())
                     .entityId(request.getEntityId())
                     .details(request.getDetails())
