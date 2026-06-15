@@ -21,7 +21,7 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "law_firm_code", length = 50)
     private String lawFirmCode;
 
     @Column(nullable = false, length = 50)

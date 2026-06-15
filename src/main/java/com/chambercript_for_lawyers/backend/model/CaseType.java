@@ -18,4 +18,13 @@ public class CaseType {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private CaseType parentCategory;
+
+
+    public CaseType() {
+    }
+
+    // ADD THIS: It tells Spring Boot how to convert a number (like 3) into this object
+    public CaseType(Long id) {
+        this.id = id;
+    }
 }

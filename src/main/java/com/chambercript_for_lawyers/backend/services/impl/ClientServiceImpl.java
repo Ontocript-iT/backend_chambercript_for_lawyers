@@ -105,7 +105,7 @@ public class ClientServiceImpl implements ClientService {
 
             if (clients.isEmpty()) {
                 response.put("status", 404);
-                response.put("message", "No clients found for the provided law firm code.");
+                response.put("message", "No clients found for the provided chamber.");
                 return ResponseEntity.status(404).body(response);
             }
 
