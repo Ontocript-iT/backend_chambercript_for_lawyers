@@ -1,6 +1,7 @@
 package com.chambercript_for_lawyers.backend.controller;
 
 import com.chambercript_for_lawyers.backend.dto.request.CaseRegistrationRequest;
+import com.chambercript_for_lawyers.backend.enums.CaseStatus;
 import com.chambercript_for_lawyers.backend.services.central.LegalCaseService;
 import lombok.RequiredArgsConstructor;
 
@@ -48,5 +49,41 @@ public class LegalCaseController {
         return legalCaseService.getFutureCases(page, size);
     }
 
+    @PutMapping("/updateCase/{caseId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> updateCase(@RequestBody CaseRegistrationRequest dto,@PathVariable  Long caseId) {
+        return legalCaseService.updateCase(dto,caseId);
+    }
+
+    @DeleteMapping("/deleteCase/{caseId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> deleteCase(@PathVariable Long caseId) {
+        return legalCaseService.deleteCase(caseId);
+    }
+
+    @GetMapping("/getCaseTypes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getCaseTypes() {
+        return legalCaseService.getCaseTypes();
+    }
+
+    @GetMapping("/getAllCourts")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLERK', 'JUNIOR_LAWYER')")
+    public ResponseEntity<?> getAllCourts() {
+        return legalCaseService.getAllCourts();
+    }
+
+    @PutMapping("/updateCaseStatus/{caseId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateCaseStatus(@PathVariable Long caseId, @RequestParam CaseStatus status) {
+        return legalCaseService.updateCaseStatus(caseId, status);
+    }
+
+    @GetMapping("/getCasesByStatus/{lawFirmCode}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getCasesByStatus(@PathVariable String lawFirmCode,@RequestParam CaseStatus status,@RequestParam(defaultValue = "0") int page,    // Default to first page
+                                              @RequestParam(defaultValue = "10") int size){
+        return legalCaseService.getCasesByStatus(status,lawFirmCode,page,size);
+    }
 
 }

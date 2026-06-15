@@ -1,6 +1,7 @@
 package com.chambercript_for_lawyers.backend.repository;
 
 
+import com.chambercript_for_lawyers.backend.enums.CaseStatus;
 import com.chambercript_for_lawyers.backend.model.LegalCase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,10 @@ public interface LegalCaseRepository extends JpaRepository<LegalCase, Long> {
 
     @Query("SELECT DISTINCT c FROM LegalCase c JOIN c.hearings h WHERE h.hearingDate >= CURRENT_DATE")
     Page<LegalCase> findFutureCases(Pageable pageable);
+
+    Page<LegalCase> findByStatusAndLawFirmCode(CaseStatus status, String lawFirmCode, Pageable pageable);
     // Example of a custom query you might need later:
     // List<LegalCase> findByAssignedLawyer(String lawyerName);
+
+    long countByStatusAndLawFirmCode(CaseStatus status, String lawFirmCode);
 }

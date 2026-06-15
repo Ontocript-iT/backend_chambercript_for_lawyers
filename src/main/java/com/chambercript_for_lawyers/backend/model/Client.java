@@ -44,4 +44,12 @@ public class Client {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+
+//    public Client() {}
+//
+//    // ADD THIS
+//    public Client(Long id) {
+//        this.id = id;
+//    }
 }

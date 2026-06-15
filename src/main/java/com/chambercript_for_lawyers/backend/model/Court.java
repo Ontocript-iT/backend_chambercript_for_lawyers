@@ -18,4 +18,12 @@ public class Court {
     private CourtType courtType;
 
     private String location;
+
+
+    public Court() {}
+
+    // ADD THIS
+    public Court(Long id) {
+        this.id = id;
+    }
 }
