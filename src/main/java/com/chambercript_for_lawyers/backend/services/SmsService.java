@@ -35,7 +35,7 @@ public class SmsService {
     @Value("${textlk.sender.id}")
     private String senderId;
 
-    // සටහන: RestTemplate එක මෙලෙස new කරනවාට වඩා, @Bean එකක් ලෙස සාදා inject කිරීම වඩාත් සුදුසුයි.
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final SubscriptionRepository subscriptionRepository;
