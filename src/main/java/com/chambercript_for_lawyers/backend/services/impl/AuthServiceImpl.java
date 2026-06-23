@@ -205,6 +205,9 @@ public class AuthServiceImpl implements AuthService {
             safeUserData.put("role", user.getRole());
             response.put("status", 200);
             response.put("isSendSms", isSendSms);
+            if(user.getRole() == Role.SUPER_ADMIN) {
+                response.put("isSendSms", true);
+            }
             response.put("token", token);
             response.put("user", safeUserData);
             response.put("message", "Trial period expired. Please complete payment to continue using the service.");
