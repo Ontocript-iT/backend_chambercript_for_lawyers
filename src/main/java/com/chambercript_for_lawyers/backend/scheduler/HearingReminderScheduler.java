@@ -28,7 +28,7 @@ public class HearingReminderScheduler {
 
     // Everyday 8 am
     @Transactional
-    @Scheduled(cron = "0 11 18 * * ?")
+//    @Scheduled(cron = "0 11 18 * * ?")
     public void sendUpcomingHearingReminders() {
         System.out.println("Running automated SMS reminder job...");
 
