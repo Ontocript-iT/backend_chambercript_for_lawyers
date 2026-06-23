@@ -59,4 +59,12 @@ public class SubscriptionController {
         Long adminId = getUserIdFromPrincipal(principal);
         return subscriptionService.getRemainingSms(adminId);
     }
+
+    @PutMapping("/updateSmsPlanStatus/{adminId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> updateSmsPlanStatus(@PathVariable Long adminId, @RequestParam boolean active) {
+        return subscriptionService.updateSmsPlanStatus(adminId, active);
+    }
+
+
 }
