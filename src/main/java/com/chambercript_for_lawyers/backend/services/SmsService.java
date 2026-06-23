@@ -66,14 +66,10 @@ public class SmsService {
                 log.info("SMS sent successfully to {}", phoneNumber);
             } else {
                 log.error("Failed to send SMS. Response: {}", response.getBody());
-                // වැදගත්: SMS එක යැවුණේ නැත්නම් Exception එකක් Throw කළ යුතුයි.
-                // නැතහොත් Database එකෙන් අඩු වූ SMS ගණන Rollback වන්නේ නැත.
                 throw new RuntimeException("Failed to send SMS. API Response: " + response.getBody());
             }
         } catch (Exception e) {
             log.error("SMS Sending Error: {}", e.getMessage());
-            // වැදගත්: මෙතන Exception එක ගිලගන්න එපා (catch කරලා නිකන් ඉන්න එපා).
-            // අනිවාර්යයෙන්ම re-throw කරන්න. එතකොට තමයි @Transactional එකට තේරෙන්නේ අවුලක් ගියා කියලා.
             throw new RuntimeException("Error occurred while sending SMS", e);
         }
     }
