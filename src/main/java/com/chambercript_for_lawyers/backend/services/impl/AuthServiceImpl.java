@@ -161,47 +161,49 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
         var currentMonthPaymentStatus = subscriptionPaymentService.checkCurrentMonthPaymentStatus(user.getLawFirmCode());
+        boolean isPaymentCompleted = false;
 
-        String paymentMessage = "";
-        if (currentMonthPaymentStatus != null && currentMonthPaymentStatus.getBody() != null) {
-            Map<String, Object> responseBody = (Map<String, Object>) currentMonthPaymentStatus.getBody();
+        if (user.getRole()!=Role.SUPER_ADMIN) {
+            String paymentMessage = "";
+            if (currentMonthPaymentStatus != null && currentMonthPaymentStatus.getBody() != null) {
+                Map<String, Object> responseBody = (Map<String, Object>) currentMonthPaymentStatus.getBody();
 
-            if (responseBody.get("message") != null) {
-                paymentMessage = (String) responseBody.get("message");
+                if (responseBody.get("message") != null) {
+                    paymentMessage = (String) responseBody.get("message");
+                }
             }
-        }
 
 
-        boolean isPaymentCompleted = !paymentMessage.toLowerCase().contains("pending");
+          isPaymentCompleted = !paymentMessage.toLowerCase().contains("pending");
+            boolean isSendSms= false;
+            isSendSms=smsService.checkSmsCanSend(user.getId());
 
-        boolean isSendSms=smsService.checkSmsCanSend(user.getId());
+            if (isTrialExpired(user)) {
+                boolean hasPaid = subscriptionPaymentRepository.existsByLawFirmCodeAndIsPaidTrue(user.getLawFirmCode());
 
-
-        if (isTrialExpired(user)) {
-            boolean hasPaid = subscriptionPaymentRepository.existsByLawFirmCodeAndIsPaidTrue(user.getLawFirmCode());
-
-            System.out.println("Trial expired for user: " + user.getEmail() + ". Payment status: " + (hasPaid ? "Paid" : "Not Paid"));
-            if (!hasPaid) {
-                HashMap<String, Object> safeUserData = new HashMap<>();
-                safeUserData.put("id", user.getId());
-                safeUserData.put("email", user.getEmail());
-                safeUserData.put("lawFirmCode", user.getLawFirmCode());
-                safeUserData.put("isPaymentCompleted", true);
-                safeUserData.put("role", user.getRole());
-                response.put("status", 200);
-                response.put("isSendSms", isSendSms);
-                response.put("token", token);
-                response.put("user", safeUserData);
-                response.put("message", "Trial period expired. Please complete payment to continue using the service.");
-                return ResponseEntity.status(200).body(response);
+                System.out.println("Trial expired for user: " + user.getEmail() + ". Payment status: " + (hasPaid ? "Paid" : "Not Paid"));
+                if (!hasPaid) {
+                    HashMap<String, Object> safeUserData = new HashMap<>();
+                    safeUserData.put("id", user.getId());
+                    safeUserData.put("email", user.getEmail());
+                    safeUserData.put("lawFirmCode", user.getLawFirmCode());
+                    safeUserData.put("isPaymentCompleted", true);
+                    safeUserData.put("role", user.getRole());
+                    response.put("status", 200);
+                    response.put("isSendSms", isSendSms);
+                    response.put("token", token);
+                    response.put("user", safeUserData);
+                    response.put("message", "Trial period expired. Please complete payment to continue using the service.");
+                    return ResponseEntity.status(200).body(response);
+                }
             }
-        }
-        if (!user.isEmailVerified()) {
-            response.put("status", 403);
-            response.put("message", "Email not verified. Please check your inbox.");
-            return ResponseEntity.status(403).body(response);
-        }
+            if (!user.isEmailVerified()) {
+                response.put("status", 403);
+                response.put("message", "Email not verified. Please check your inbox.");
+                return ResponseEntity.status(403).body(response);
+            }
 
+        }
 
         HashMap<String, Object> safeUserData = new HashMap<>();
         safeUserData.put("id", user.getId());
