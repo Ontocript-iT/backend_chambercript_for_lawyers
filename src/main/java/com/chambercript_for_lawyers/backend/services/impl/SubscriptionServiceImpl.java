@@ -61,6 +61,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             if (request.getSmsPlan() != null) {
                 subscription.setSmsPlan(request.getSmsPlan());
+                subscription.setActiveSmsPlan(true);
             }
             subscription = subscriptionRepository.save(subscription);
 
@@ -278,6 +279,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             return ResponseEntity.status(500).body(response);
         }
     }
+
     @Override
     public ResponseEntity<?> activeSubscriptionById(Long subscriptionId) {
         HashMap<String, Object> response = new HashMap<>();
@@ -402,6 +404,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             Subscription sub = subOpt.get();
             sub.setSmsPlan(request.getSmsPlan());
+            sub.setActiveSmsPlan(false);
             subscriptionRepository.save(sub);
 
             SubscriptionResponseDTO cleanData = SubscriptionResponseDTO.builder()
@@ -445,7 +448,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             response.put("status", 200);
             response.put("message", "Remaining SMS retrieved successfully.");
-            response.put("data",getRemainingSmsByAdminId(adminId));
+            response.put("data", getRemainingSmsByAdminId(adminId));
             return ResponseEntity.status(200).body(response);
 
         } catch (Exception e) {
@@ -455,14 +458,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
-    public  Integer getRemainingSmsByAdminId(Long adminId) {
+    public Integer getRemainingSmsByAdminId(Long adminId) {
         Subscription subscription = subscriptionRepository.findByAdminId(adminId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
         Optional<SubscriptionUsage> usage = subscriptionUsageRepository.findBySubscriptionId(subscription.getId());
 
         SmsPlan currentSmsPlan = subscription.getSmsPlan();
-
 
 
         if (usage.isPresent()) {
@@ -473,8 +475,48 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             return Math.max(smsLimit - smsUsed, 0);
 
 
-
         }
         return currentSmsPlan.getQuota();
     }
+
+    @Override
+    public ResponseEntity<?> updateSmsPlanStatus(Long adminId, boolean isActive) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<Subscription> subOpt = subscriptionRepository.findByAdminId(adminId);
+
+            if (subOpt.isEmpty()) {
+                response.put("status", 404);
+                response.put("message", "Subscription not found.");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            Subscription sub = subOpt.get();
+            sub.setActiveSmsPlan(isActive);
+            subscriptionRepository.save(sub);
+
+            SubscriptionResponseDTO cleanData = SubscriptionResponseDTO.builder()
+                    .id(sub.getId())
+                    .planType(sub.getPlanType().name())
+                    .maxEmployees(sub.getMaxEmployees())
+                    .maxStorageGb(sub.getMaxStorageGb())
+                    .isActive(sub.isActive())
+                    .adminId(sub.getAdmin().getId())
+                    .adminName(sub.getAdmin().getFirstName() + " " + sub.getAdmin().getLastName())
+                    .smsPlan(sub.getSmsPlan())
+                    .isActiveSmsPlan(sub.isActiveSmsPlan())
+                    .build();
+
+            response.put("status", 200);
+            response.put("message", "SMS plan status updated successfully.");
+            response.put("data", cleanData);
+            return ResponseEntity.status(200).body(response);
+
+        } catch (Exception e) {
+            response.put("status", 500);
+            response.put("message", "Internal Server Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
+}

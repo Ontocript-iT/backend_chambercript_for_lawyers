@@ -19,5 +19,6 @@ public class SubscriptionResponseDTO {
     // Add to your existing SubscriptionResponseDTO
     private String smsPlanType;
     private Integer smsQuota;
+    private boolean isActiveSmsPlan;
 
 }

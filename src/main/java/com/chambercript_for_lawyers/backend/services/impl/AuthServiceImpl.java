@@ -164,7 +164,6 @@ public class AuthServiceImpl implements AuthService {
 
         String paymentMessage = "";
         if (currentMonthPaymentStatus != null && currentMonthPaymentStatus.getBody() != null) {
-            // 1. Cast the generic Object to a Map
             Map<String, Object> responseBody = (Map<String, Object>) currentMonthPaymentStatus.getBody();
 
             if (responseBody.get("message") != null) {
