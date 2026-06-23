@@ -39,4 +39,6 @@ public class Subscription {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    private boolean isActiveSmsPlan;
 }
