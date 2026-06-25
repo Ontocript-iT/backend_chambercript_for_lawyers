@@ -24,7 +24,7 @@ public class EmailServiceImpl implements EmailService {
             message.setTo(to);
             message.setSubject("Verify your account");
             message.setText("Please click the link to verify your email: " +
-                    "http://localhost:8080/api/auth/verify?token=" + token);
+                    "https://ccriptlawyer.tech/auth/verify?token=" + token);
 
             mailSender.send(message);
         } catch (Exception e) {
