@@ -1,14 +1,19 @@
 package com.chambercript_for_lawyers.backend.services.impl;
 
 import com.chambercript_for_lawyers.backend.services.central.EmailService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
@@ -18,19 +23,27 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendVerificationEmail(String to, String token) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject("Verify your account");
-            message.setText("Please click the link to verify your email: " +
-                    "https://ccriptlawyer.tech/auth/verify?token=" + token);
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Verify your account");
+
+            String verifyLink = "https://ccriptlawyer.tech/auth/verify?token=" + token;
+            String htmlContent = "<p>Please click the link below to verify your email:</p>"
+                    + "<p><a href=\"" + verifyLink + "\">Verify My Account</a></p>";
+
+            helper.setText(htmlContent, true);
 
             mailSender.send(message);
-        } catch (Exception e) {
-            System.err.println("Error sending email: " + e.getMessage());
-        }
 
+        } catch (MessagingException e) {
+            log.error("Failed to construct or send MimeMessage to: {}", to, e);
+
+        } catch (Exception e) {
+            log.error("Unexpected error occurred while sending email to: {}", to, e);
+        }
     }
 
     @Override
