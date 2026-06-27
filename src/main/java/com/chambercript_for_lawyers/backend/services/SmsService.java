@@ -95,7 +95,6 @@ public class SmsService {
 
             if (smsUsed < smsLimit) {
                 log.info("Current SMS usage: {}/{}", smsUsed, smsLimit);
-//                subscriptionUsage.setUsedSmsCount(smsUsed + 1);
                 subscriptionUsageRepository.incrementSmsCountById(subscription.getId());
                 return true;
             } else {
@@ -115,9 +114,9 @@ public class SmsService {
 
         SmsPlan currentSmsPlan = subscription.getSmsPlan();
 
-        if (currentSmsPlan == SmsPlan.NONE) {
-            return false;
-        }
+//        if (currentSmsPlan == SmsPlan.NONE) {
+//            return false;
+//        }
 
         if (usage.isPresent()) {
             log.info("Found subscription usage for subscription ID: {}", subscription.getId());
